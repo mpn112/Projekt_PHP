@@ -34,8 +34,20 @@ if ($akcja != "") {
 
         case "usun":
             $id = (int)pobierz_post("id");
-            mysqli_query($pol, "DELETE FROM pojazdy WHERE id_pojazdu=$id");
-            $msg = "Usunięto pojazd (jeśli nie ma powiązanych napraw).";
+            $q = mysqli_query($pol, "SELECT COUNT(*) FROM naprawy WHERE id_pojazdu=$id");
+            $cnt = 0;
+            if ($q) {
+                $r = mysqli_fetch_row($q);
+                $cnt = (int)($r[0] ?? 0);
+                mysqli_free_result($q);
+            }
+
+            if ($cnt > 0) {
+                $err = "Nie można usunąć pojazdu — istnieje powiązana naprawa.";
+            } else {
+                mysqli_query($pol, "DELETE FROM pojazdy WHERE id_pojazdu=$id");
+                $msg = "Usunięto pojazd.";
+            }
             break;
 
         case "zapisz":
