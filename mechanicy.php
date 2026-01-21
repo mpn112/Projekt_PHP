@@ -28,10 +28,24 @@ if ($akcja != "") {
             }
             break;
 
-        case "usun":
+       case "usun":
             $id = (int)pobierz_post("id");
-            mysqli_query($pol, "DELETE FROM mechanicy WHERE id_mechanika=$id");
-            $msg = "Usunięto mechanika.";
+
+            // Sprawdź, czy mechanik ma powiązane naprawy
+            $q = mysqli_query($pol, "SELECT COUNT(*) FROM naprawy WHERE id_mechanika=$id");
+            $cnt = 0;
+            if ($q) {
+                $r = mysqli_fetch_row($q);
+                $cnt = (int)($r[0] ?? 0);
+                mysqli_free_result($q);
+            }
+
+            if ($cnt > 0) {
+                $err = "Nie można usunąć mechanika — istnieją powiązane naprawy.";
+            } else {
+                mysqli_query($pol, "DELETE FROM mechanicy WHERE id_mechanika=$id");
+                $msg = "Usunięto mechanika.";
+            }
             break;
 
         case "zapisz":

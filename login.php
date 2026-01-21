@@ -6,44 +6,33 @@ $pol = db_polacz();
 $msg = "";
 $err = "";
 
-if (isset($_POST["akcja"])) {
-    $akcja = $_POST["akcja"];
+if (isset($_POST["akcja"]) && $_POST["akcja"] === "login") {
+    $login = pobierz_post("login");
+    $haslo = pobierz_post("haslo");
 
-    if ($akcja == "utworz_test") {
-        $login = "admin";
-        $haslo = "admin123";
-        $hash = password_hash($haslo, PASSWORD_DEFAULT);
+    if ($login == "" || $haslo == "") {
+        $err = "Podaj login i hasło.";
+    } else {
+        $login_esc = mysqli_real_escape_string($pol, $login);
+        $sql = "SELECT haslo_hash FROM uzytkownicy WHERE login='$login_esc'";
+        $res = mysqli_query($pol, $sql);
 
-        $sql = "INSERT IGNORE INTO uzytkownicy(login, haslo_hash) VALUES ('".mysqli_real_escape_string($pol,$login)."','".mysqli_real_escape_string($pol,$hash)."')";
-        mysqli_query($pol, $sql);
-        $msg = "Utworzono konto testowe: login=admin, hasło=admin123 (jeśli nie istniało).";
-    }
+        if ($res && mysqli_num_rows($res) == 1) {
+            $row = mysqli_fetch_row($res);
+            $hash = $row[0];
 
-    if ($akcja == "login") {
-        $login = pobierz_post("login");
-        $haslo = pobierz_post("haslo");
-
-        if ($login == "" || $haslo == "") {
-            $err = "Podaj login i hasło.";
-        } else {
-            $login_esc = mysqli_real_escape_string($pol, $login);
-            $sql = "SELECT haslo_hash FROM uzytkownicy WHERE login='$login_esc'";
-            $res = mysqli_query($pol, $sql);
-            if ($res && mysqli_num_rows($res) == 1) {
-                $row = mysqli_fetch_row($res);
-                $hash = $row[0];
-                if (password_verify($haslo, $hash)) {
-                    $_SESSION["login"] = $login;
-                    header("Location: index.php");
-                    exit();
-                } else {
-                    $err = "Błędne hasło.";
-                }
+            if (password_verify($haslo, $hash)) {
+                $_SESSION["login"] = $login;
+                header("Location: index.php");
+                exit();
             } else {
-                $err = "Nie ma takiego użytkownika.";
+                $err = "Błędne hasło.";
             }
-            if ($res) mysqli_free_result($res);
+        } else {
+            $err = "Nie ma takiego użytkownika.";
         }
+
+        if ($res) mysqli_free_result($res);
     }
 }
 
@@ -64,12 +53,12 @@ include "header.php";
       </div>
       <div>
         Hasło:
-        <input type="text" name="haslo">
+        <input type="password" name="haslo">
       </div>
     </div>
     <p>
       <button class="btn" type="submit" name="akcja" value="login">Zaloguj</button>
-      <button class="btn" type="submit" name="akcja" value="utworz_test">Utwórz konto testowe</button>
+      <a class="btn" href="rejestracja.php" style="text-decoration:none; display:inline-block;">Rejestracja</a>
     </p>
   </form>
 </div>
