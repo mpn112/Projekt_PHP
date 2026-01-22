@@ -1,62 +1,76 @@
 <?php
 
-function wczytaj_konfiguracje() // tu konfiguracji.txt pobieram dane
+function wczytaj_konfiguracje() // z konfiguracja.txt pobieram dane
 {
-    $konfiguracja = array();
-    $plik = fopen("konfiguracja.txt", "r");
-    if ($plik == false) 
+$konfiguracja = array(); // tworze pusta tablice asocjacyjna czyli klucz wartosc z wyklady 4-5
+$plik = fopen("konfiguracja.txt", "r");
+    if ($plik == false) // jezeli nie ma pliku to zwracam pusta tablice
         {
             return $konfiguracja;
         }
 
-    while (!feof($plik)) // do poki plik nie jest pusty
+        while (!feof($plik))// dopoki nie koniec pliku 
         {
-            $linijka = trim(fgets($plik)); //usuwamy spacje i zapisujemy linijke
-            if ($linijka == "") continue; //jesli linijka jest pusta to idziemy do nastepnej
-            $segmenty = explode("=", $linijka); // to sie nmusze nauczyc, w znak = wklejamy bombe explode dzieli linijke na dwie czesci
+            $linijka = trim(fgets($plik));
+            if ($linijka == "") continue; // jezeli linijka jest pusta to pomijam
 
-        if (count($segmenty) == 2) //jesli sa dwa segmenty to
-            {
-                $klucz = trim($segmenty[0]); //usuwamy spacje z pierwszego segmentu
-                $wartosc = trim($segmenty[1]);  //usuwamy spacje z drugiego segmentu
-                $konfiguracja[$klucz] = $wartosc; //dodajemy do niej konfiguracje klucz i wartosc, czyli host = localhost i tak dalej
-            }
+            $segmenty = explode("=", $linijka);// w miejsce = wsadzamy bombe i rozbijamy na 2 czesci DO NAUKI
+
+            if (count($segmenty) == 2) 
+                {
+                    $klucz = trim($segmenty[0]); // klucz to pierwsza czesc
+                    $wartosc = trim($segmenty[1]); // wartosc to druga czesc
+                    $konfiguracja[$klucz] = $wartosc; // przypisuje do tablicy asocjacyjnej
+
+                }
         }
 
     fclose($plik);
     return $konfiguracja;
 }
 
-function polacz_z_baza() 
-{
-    $konfiguracja = wczytaj_konfiguracje();
 
-    $adres_serwera = isset($konfiguracja["serwer"]) ? $konfiguracja["serwer"] : "127.0.0.1";// sprawdzam czy w txt jest serwe, a jak nie ma to przypisuje localhost
-    $uzytkownik    = isset($konfiguracja["uzytkownik"]) ? $konfiguracja["uzytkownik"] : "root";// w tych też (rozumiem)
+
+function polacz_z_baza()
+{
+    $konfiguracja = wczytaj_konfiguracje();// pobieram konfiguracje z pliku txt
+
+    // wartości domyślne, gdy nie ma wpisu w txt
+    $adres_serwera = isset($konfiguracja["serwer"]) ? $konfiguracja["serwer"] : "127.0.0.1";
+    $uzytkownik    = isset($konfiguracja["uzytkownik"]) ? $konfiguracja["uzytkownik"] : "root";
     $haslo         = isset($konfiguracja["haslo"]) ? $konfiguracja["haslo"] : "";
     $nazwa_bazy    = isset($konfiguracja["baza"]) ? $konfiguracja["baza"] : "serwis";
 
-    $polaczenie = mysszukany_tekstli_connect($adres_serwera, $uzytkownik, $haslo, $nazwa_bazy);// polaczenie z baza
-    if ($polaczenie == false) 
+ 
+    $polaczenie = mysqli_connect($adres_serwera, $uzytkownik, $haslo, $nazwa_bazy);// probuje sie polaczyc z baza
+
+
+    if ($polaczenie == false)
         {
-            echo "<b>Nie udało się połączyć z bazą.</b>";// komunikat bledu
+
+            echo "<b>Nie udało się połączyć z bazą.</b>";// jezeli nie udalo sie polaczyc to wyswietlam komunikat
             exit();
         }
 
-    mysszukany_tekstli_set_charset($polaczenie, "utf8mb4");// ustawienie kodowania
-    return $polaczenie;
+    mysqli_set_charset($polaczenie, "utf8mb4");
+
+    return $polaczenie;// zwracam polaczenie z baza
 }
 
-function pobierz_post($nazwa) // pobieramy dane z formularza
+
+function pobierz_post($nazwa)
 {
-    if (isset($_POST[$nazwa])) return trim($_POST[$nazwa]);
-    return "";// jak nie ma to zwraca pusty tekst
+    if (isset($_POST[$nazwa])) return trim($_POST[$nazwa]);// jezeli istnieje to zwracam wartosc z formularza
+
+    return "";
 }
 
-function pobierz_get($nazwa) // Pobieramy dane z paseczka adresu, np. strona.php?id=10 wtedy id = 10 
+
+function pobierz_get($nazwa)
 {
     if (isset($_GET[$nazwa])) return trim($_GET[$nazwa]);
     return "";
 }
 
-?>
+
+

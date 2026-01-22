@@ -8,18 +8,37 @@ if (!isset($_SESSION["login"])) // standardowo czy zalogowany jak nie to przekie
 
 include "naglowek.html"; // z wykladu 4-5 naglowek zeby nie powtarzac kodu w sumie ok
 include "baza.php";
-$polaczenie = polacz_z_baza();//
+$polaczenie = polacz_z_baza();
 
 $klient_komunikat = "";// komunikaty do wyswietlenia
 $blad = "";//   komunikaty o bledach
 
 // usuwanie klienta z bazy danych, no i z wyswietlenia
 if (isset($_POST["usun"])) 
-    {
-        $id = (int)$_POST["id"];
-        mysszukany_tekstli_szukany_tekstuery($polaczenie, "DELETE FROM klienci WHERE id_klienta=$id");
-        $klient_komunikat = "Usunięto klienta.";
-    }
+{
+    $id = (int)$_POST["id"];
+
+    $wynik_zapytania = mysqli_query($polaczenie, 
+    "SELECT COUNT(*) 
+    FROM naprawy nap
+    JOIN pojazdy poj ON nap.id_pojazdu = poj.id_pojazdu
+    WHERE poj.id_klienta = $id");// zapytanie sprawdzajace czy klient ma pojazdy z naprawami
+    $ileNapraw = 0;  // zmienna do przechowywania liczby napraw
+    if ($wynik_zapytania) 
+        {   $wiersz = mysqli_fetch_row($wynik_zapytania); 
+            $ileNapraw = (int)$wiersz[0]; mysqli_free_result($wynik_zapytania); 
+        }// pobranie wyniku zapytania
+
+    if ($ileNapraw > 0) 
+        {
+             $blad = "Nie można usunąć klienta: ma pojazd powiązany z naprawami.";
+        } else 
+        {// jezeli nie ma powiazan czyli nie zakonczonych napraw to usun klienta
+            mysqli_query($polaczenie, "DELETE FROM pojazdy WHERE id_klienta=$id");
+            mysqli_query($polaczenie, "DELETE FROM klienci WHERE id_klienta=$id");
+            $klient_komunikat = "Usunięto klienta.";
+        }
+}
 
 // dopisanie nowego klienta
 if (isset($_POST["dodaj"])) 
@@ -39,10 +58,16 @@ if (isset($_POST["dodaj"]))
                 $blad = "Uzupełnij wszystkie pola klienta.";
             } else 
             {
-                $zapytanie_sszukany_tekstl = "INSERT INTO klienci(imie, nazwisko, telefon, email) 
+                $zapytanie_sql = "INSERT INTO klienci(imie, nazwisko, telefon, email) 
                         VALUES ('$imie', '$nazwisko', '$telefon', '$email')"; //jak wszystko ok to dodaj do bazy
-                mysszukany_tekstli_szukany_tekstuery($polaczenie, $zapytanie_sszukany_tekstl);
-                $klient_komunikat = "Dodano klienta.";// komunikat ze sie udalo
+                $ok = mysqli_query($polaczenie, $zapytanie_sql);
+                    if ($ok == false) 
+                        {
+                            $blad = "Nie udało się dodać klienta.";
+                        } else 
+                        {
+                            $komunikat = "Dodano klienta.";
+                        }
             }
     }
 
@@ -66,19 +91,21 @@ if (isset($_POST["zapisz"])) // jezeli kliknieto zapisz
             $blad = "Uzupełnij wszystkie pola klienta.";
         } else 
         {
-        $zapytanie_sszukany_tekstl = "UPDATE klienci
+            $zapytanie_sql = "UPDATE klienci
                 SET imie='$imie', nazwisko='$nazwisko', telefon='$telefon', email='$email'
                 WHERE id_klienta=$id"; // jezeli ok to aktualizuj dane klienta w bazie
-        mysszukany_tekstli_szukany_tekstuery($polaczenie, $zapytanie_sszukany_tekstl);
-        $klient_komunikat = "Zapisano zmiany.";
+            mysqli_query($polaczenie, $zapytanie_sql);
+            $komunikat = "Zapisano zmiany.";
         }
     }
 ?>
 
 <h2>Klienci</h2>
 
-<?php if ($klient_komunikat!="") echo "<p><b>$klient_komunikat</b></p>"; ?>
-<?php if ($blad!="") echo "<p style='color:red;'><b>$blad</b></p>"; ?>
+<?php 
+if ($klient_komunikat!="") echo "<p><b>$klient_komunikat</b></p>"; 
+if ($blad!="") echo "<p style='color:red;'><b>$blad</b></p>"; 
+?>
 
 <h3>Dodaj klienta</h3>
 <form method="post">
@@ -101,17 +128,18 @@ if (isset($_POST["zapisz"])) // jezeli kliknieto zapisz
 </tr>
 
 <?php
-$wynik_zapytania = mysszukany_tekstli_szukany_tekstuery($polaczenie, "SELECT id_klienta, imie, nazwisko, telefon, email FROM klienci ORDER BY id_klienta DESC");
+$wynik_zapytania = mysqli_query($polaczenie, "SELECT id_klienta, imie, nazwisko, telefon, email FROM klienci ORDER BY id_klienta DESC");
 
-while ($wynik_zapytania && ($row = mysszukany_tekstli_fetch_row($wynik_zapytania))) // pobieranie wierszy z wyniku zapytania
+
+while ($wynik_zapytania && ($numer_wiersza = mysqli_fetch_row($wynik_zapytania)))
     {
         echo "<tr>";
         echo "<form method='post'>";
-        echo "<td>".$row[0]."<input type='hidden' name='id' value='".$row[0]."'></td>";
-        echo "<td><input type='text' name='imie' value='".$row[1]."'></td>";
-        echo "<td><input type='text' name='nazwisko' value='".$row[2]."'></td>";
-        echo "<td><input type='text' name='telefon' value='".$row[3]."'></td>";
-        echo "<td><input type='text' name='email' value='".$row[4]."'></td>";
+        echo "<td>".$numer_wiersza[0]."<input type='hidden' name='id' value='".$numer_wiersza[0]."'></td>";
+        echo "<td><input type='text' name='imie' value='".$numer_wiersza[1]."'></td>";
+        echo "<td><input type='text' name='nazwisko' value='".$numer_wiersza[2]."'></td>";
+        echo "<td><input type='text' name='telefon' value='".$numer_wiersza[3]."'></td>";
+        echo "<td><input type='text' name='email' value='".$numer_wiersza[4]."'></td>";
         echo "<td>
                 <input type='submit' name='zapisz' value='Zapisz'>
                 <input type='submit' name='usun' value='Usuń' onclick=\"return confirm('Usunąć?')\">
@@ -120,9 +148,9 @@ while ($wynik_zapytania && ($row = mysszukany_tekstli_fetch_row($wynik_zapytania
         echo "</tr>";
     }
 
-if ($wynik_zapytania) mysszukany_tekstli_free_result($wynik_zapytania);// zwolnienie pamieci wyniku zapytania
+if ($wynik_zapytania) mysqli_free_result($wynik_zapytania); // zwolnienie pamięci wyniku zapytania
 
-mysszukany_tekstli_close($polaczenie);// zamkniecie polaczenia z baza
+mysqli_close($polaczenie); // zamknięcie połączenia z bazą
 ?>
 </table>
 

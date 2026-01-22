@@ -10,7 +10,7 @@ DROP TABLE IF EXISTS uzytkownicy;
 
 CREATE TABLE uzytkownicy (
   id_uzytkownika INT AUTO_INCREMENT PRIMARY KEY,
-  login VARCHAR(50) NOT NULL UNIszukany_tekstUE,
+  login VARCHAR(50) NOT NULL UNIQUE,
   haslo_hash VARCHAR(255) NOT NULL
 );
 
@@ -47,7 +47,7 @@ CREATE TABLE naprawy (
   opis_usterki TEXT NOT NULL,
   status VARCHAR(30) NOT NULL,
   data_przyjecia DATE NOT NULL,
-  data_zakonczeniaakonczenia DATE NULL,
+  data_zakonczenia DATE NULL,
   koszt DECIMAL(10,2) NOT NULL,
   FOREIGN KEY (id_pojazdu) REFERENCES pojazdy(id_pojazdu),
   FOREIGN KEY (id_mechanika) REFERENCES mechanicy(id_mechanika)
@@ -66,7 +66,7 @@ INSERT INTO mechanicy (imie, nazwisko, specjalizacja) VALUES
 ('Piotr', 'Mechanik', 'Mechanika'),
 ('Tomasz', 'Elektryk', 'Elektryka');
 
-INSERT INTO naprawy (id_pojazdu, id_mechanika, opis_usterki, status, data_przyjecia, data_zakonczeniaakonczenia, koszt) VALUES
+INSERT INTO naprawy (id_pojazdu, id_mechanika, opis_usterki, status, data_przyjecia, data_zakonczenia, koszt) VALUES
 (1, 1, 'Wymiana oleju i filtrów', 'Gotowe', '2026-01-10', '2026-01-10', 250.00),
 (2, 2, 'Diagnoza elektryki - brak ładowania', 'W trakcie', '2026-01-12', NULL, 0.00);
 
