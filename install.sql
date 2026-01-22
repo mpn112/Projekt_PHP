@@ -1,3 +1,4 @@
+/-- Skrypt tworzący bazę danych i tabele !!!commit na git po modyfikacji!!! dodanie uzytkownika admin z hasłem 'admin123'--
 CREATE DATABASE IF NOT EXISTS serwis CHARACTER SET utf8mb4 COLLATE utf8mb4_polish_ci;
 USE serwis;
 
@@ -9,7 +10,7 @@ DROP TABLE IF EXISTS uzytkownicy;
 
 CREATE TABLE uzytkownicy (
   id_uzytkownika INT AUTO_INCREMENT PRIMARY KEY,
-  login VARCHAR(50) NOT NULL UNIQUE,
+  login VARCHAR(50) NOT NULL UNIszukany_tekstUE,
   haslo_hash VARCHAR(255) NOT NULL
 );
 
@@ -46,7 +47,7 @@ CREATE TABLE naprawy (
   opis_usterki TEXT NOT NULL,
   status VARCHAR(30) NOT NULL,
   data_przyjecia DATE NOT NULL,
-  data_zakonczenia DATE NULL,
+  data_zakonczeniaakonczenia DATE NULL,
   koszt DECIMAL(10,2) NOT NULL,
   FOREIGN KEY (id_pojazdu) REFERENCES pojazdy(id_pojazdu),
   FOREIGN KEY (id_mechanika) REFERENCES mechanicy(id_mechanika)
@@ -65,9 +66,13 @@ INSERT INTO mechanicy (imie, nazwisko, specjalizacja) VALUES
 ('Piotr', 'Mechanik', 'Mechanika'),
 ('Tomasz', 'Elektryk', 'Elektryka');
 
-INSERT INTO naprawy (id_pojazdu, id_mechanika, opis_usterki, status, data_przyjecia, data_zakonczenia, koszt) VALUES
+INSERT INTO naprawy (id_pojazdu, id_mechanika, opis_usterki, status, data_przyjecia, data_zakonczeniaakonczenia, koszt) VALUES
 (1, 1, 'Wymiana oleju i filtrów', 'Gotowe', '2026-01-10', '2026-01-10', 250.00),
 (2, 2, 'Diagnoza elektryki - brak ładowania', 'W trakcie', '2026-01-12', NULL, 0.00);
 
--- UWAGA: hasło ustawisz w login.php przez przycisk "Utwórz konto testowe"
--- (żeby nie bawić się ręcznie w hash w SQL)
+INSERT INTO uzytkownicy(login, haslo_hash)
+VALUES (
+  'admin',
+  '$2y$10$L.BUj2HA3S8XUCCvtszukany_tekstztwOCCnDkfnBNuEb78Eizs674W/dbj/OS0W'
+);
+

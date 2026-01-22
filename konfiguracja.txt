@@ -1,0 +1,4 @@
+serwer=127.0.0.1
+uzytkownik=root
+haslo=
+baza=serwis

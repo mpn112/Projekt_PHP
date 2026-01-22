@@ -1,65 +1,80 @@
 <?php
-require_once "auth.php";
-require_once "db.php";
+session_start();
 
-$pol = db_polacz();
-$msg = "";
-$err = "";
-
-if (isset($_POST["akcja"]) && $_POST["akcja"] === "login") {
-    $login = pobierz_post("login");
-    $haslo = pobierz_post("haslo");
-
-    if ($login == "" || $haslo == "") {
-        $err = "Podaj login i hasło.";
-    } else {
-        $login_esc = mysqli_real_escape_string($pol, $login);
-        $sql = "SELECT haslo_hash FROM uzytkownicy WHERE login='$login_esc'";
-        $res = mysqli_query($pol, $sql);
-
-        if ($res && mysqli_num_rows($res) == 1) {
-            $row = mysqli_fetch_row($res);
-            $hash = $row[0];
-
-            if (password_verify($haslo, $hash)) {
-                $_SESSION["login"] = $login;
-                header("Location: index.php");
-                exit();
-            } else {
-                $err = "Błędne hasło.";
-            }
-        } else {
-            $err = "Nie ma takiego użytkownika.";
-        }
-
-        if ($res) mysqli_free_result($res);
+if (isset($_SESSION["login"])) 
+    {
+        header("Location: index.php");// przekierowanie do strony głównej, jeśli już zalogowany
+        exit();
     }
-}
 
-mysqli_close($pol);
-include "header.php";
+include "baza.php";
+$polaczenie = polacz_z_baza();// tworzenie połaczenia z baza danych
+
+$blad = "";
+
+if (isset($_POST["zaloguj"])) // sprawdzenie czy formularz został wysłany
+    {
+        $login = "";
+        $haslo = "";
+
+        if (isset($_POST["login"])) $login = trim($_POST["login"]); //  usuwanie białych znaków z początku i końca wyklad 3-4
+        if (isset($_POST["haslo"])) $haslo = trim($_POST["haslo"]);
+
+        if ($login == "" || $haslo == "") // sprawdzenie czy pola nie są puste
+            {
+                $blad = "Podaj login i hasło."; //jezeli puste, ustawienie komunikatu o błędzie
+            } else 
+            {
+                $zapytanie_sszukany_tekstl = "SELECT haslo_hash FROM uzytkownicy WHERE login='$login'"; // zapytanie Sszukany_tekstL do pobrania hasła z bazy danych dla podanego loginu
+                $wynik_zapytania = mysszukany_tekstli_szukany_tekstuery($polaczenie, $zapytanie_sszukany_tekstl);
+
+                    if ($wynik_zapytania && mysszukany_tekstli_num_rows($wynik_zapytania) == 1) //sprawdzam czy jest chociaż jeden wynik
+                        {
+                            $row = mysszukany_tekstli_fetch_row($wynik_zapytania); // pobranie wiersza z wyniku zapytania
+
+                        if (password_verify($haslo, $row[0])) // weryfikacja hasła
+                            {
+                                $_SESSION["login"] = $login; // ustawienie sesji dla zalogowanego użytkownika
+                                header("Location: index.php");
+                                exit();
+                            } else
+
+                            {
+                                $blad = "Błędne hasło.";
+                            }
+                            } else
+                            
+                            {
+                                $blad = "Nie ma takiego użytkownika.";
+                            }
+
+                            if ($wynik_zapytania) mysszukany_tekstli_free_result($wynik_zapytania);// zwolnienie pamięci wyniku zapytania
+            }
+    }
+
+mysszukany_tekstli_close($polaczenie);// zamknięcie połączenia z bazą danych
 ?>
-<div class="card">
-  <h2>Logowanie</h2>
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8">
+  <title>Logowanie</title>
+</head>
+<body>
 
-  <?php if ($msg != "") { ?><div class="msg"><?php echo h($msg); ?></div><?php } ?>
-  <?php if ($err != "") { ?><div class="err"><?php echo h($err); ?></div><?php } ?>
+<h2>Logowanie</h2>
 
-  <form method="post">
-    <div class="grid2">
-      <div>
-        Login:
-        <input type="text" name="login">
-      </div>
-      <div>
-        Hasło:
-        <input type="password" name="haslo">
-      </div>
-    </div>
-    <p>
-      <button class="btn" type="submit" name="akcja" value="login">Zaloguj</button>
-      <a class="btn" href="rejestracja.php" style="text-decoration:none; display:inline-block;">Rejestracja</a>
-    </p>
-  </form>
-</div>
-<?php include "footer.php"; ?>
+<?php
+if ($blad != "") {
+    echo "<p style='color:red;'><b>$blad</b></p>";
+}
+?>
+
+<form method="post">
+  Login: <input type="text" name="login"><br><br>
+  Hasło: <input type="password" name="haslo"><br><br>
+  <input type="submit" name="zaloguj" value="Zaloguj">
+</form>
+
+</body>
+</html>

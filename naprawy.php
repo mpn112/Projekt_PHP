@@ -1,201 +1,251 @@
 <?php
-require_once "auth.php";
-wymagaj_logowania();
-require_once "db.php";
+session_start();
+if (!isset($_SESSION["login"])) 
+    {
+        header("Location: login.php");
+        exit();
+    }
 
-$pol = db_polacz();
-$msg = ""; $err = "";
+include "naglowek.html";
+include "baza.php";
+$polaczenie = polacz_z_baza(); // laczenie z bazą
 
-$akcja = pobierz_post("akcja");
+$klient_komunikat = "";
+$blad = "";
+$status_naprawy = array("Przyjęte", "W trakcie", "Gotowe", "Wydane");// dostępne statusy napraw w tablicy
 
-if ($akcja != "") {
-    switch ($akcja) {
-        case "dodaj":
-            $id_pojazdu = (int)pobierz_post("id_pojazdu");
-            $id_mechanika = (int)pobierz_post("id_mechanika");
-            $opis = pobierz_post("opis_usterki");
-            $status = pobierz_post("status");
-            $data_p = pobierz_post("data_przyjecia");
-            $data_z = pobierz_post("data_zakonczenia");
-            $koszt = pobierz_post("koszt");
+// tu usuwanie naprawy
+if (isset($_POST["usun"])) 
+    {
+        $id = (int)$_POST["id"];
+        mysszukany_tekstli_szukany_tekstuery($polaczenie, "DELETE FROM naprawy WHERE id_naprawy=$id");
+        $klient_komunikat = "Usunięto naprawę.";
+    }
 
-            if ($id_pojazdu<=0 || $id_mechanika<=0 || $opis=="" || $status=="" || $data_p=="" || $koszt=="") {
-                $err = "Uzupełnij wymagane pola naprawy.";
-            } else {
-                $data_z_sql = "NULL";
-                if ($data_z != "") $data_z_sql = "'".mysqli_real_escape_string($pol,$data_z)."'";
+// tu dodawanie naprawy
+if (isset($_POST["dodaj"])) 
+    {
+        $id_pojazdu = 0;
+        $id_mechanika = 0;
+        $opis = "";
+        status_naprawy = "";
+        data_przyjecia = "";
+        $data_zakonczenia = "";
+        koszt_naprawy = "";
+/
+        if (isset($_POST["id_pojazdu"])) $id_pojazdu = (int)$_POST["id_pojazdu"]; // z formularza dodawania naprawy pobieramy wartości
+        if (isset($_POST["id_mechanika"])) $id_mechanika = (int)$_POST["id_mechanika"];
+        if (isset($_POST["opis"])) $opis = trim($_POST["opis"]);
+        if (isset($_POST["status"])) status_naprawy = trim($_POST["status"]);
+        if (isset($_POST["data_przyjecia"])) data_przyjecia = trim($_POST["data_przyjecia"]);
+        if (isset($_POST["data_zakonczeniaakonczenia"])) $data_zakonczenia = trim($_POST["data_zakonczeniaakonczenia"]);
+        if (isset($_POST["koszt"])) koszt_naprawy = trim($_POST["koszt"]);
 
-                $sql = "INSERT INTO naprawy(id_pojazdu,id_mechanika,opis_usterki,status,data_przyjecia,data_zakonczenia,koszt)
-                        VALUES ($id_pojazdu,$id_mechanika,'"
-                        .mysqli_real_escape_string($pol,$opis)."','"
-                        .mysqli_real_escape_string($pol,$status)."','"
-                        .mysqli_real_escape_string($pol,$data_p)."',"
-                        .$data_z_sql.","
-                        .(float)$koszt.")";
-                mysqli_query($pol, $sql);
-                $msg = "Dodano naprawę.";
+        if ($id_pojazdu<=0 || $id_mechanika<=0 || $opis=="" || status_naprawy=="" || data_przyjecia=="" || koszt_naprawy=="") // sprawdzamy czy wymagane pola są uzupełnione
+            {
+                $blad = "Uzupełnij wymagane pola naprawy.";
+            } else 
+            {
+                if ($data_zakonczenia == "") // zapytanie Sszukany_tekstL w zależności czy data zakończenia jest podana
+                    {
+                        $zapytanie_sszukany_tekstl = "INSERT INTO naprawy(id_pojazdu, id_mechanika, opis_usterki, status, data_przyjecia, data_zakonczeniaakonczenia, koszt)
+                                VALUES ($id_pojazdu, $id_mechanika, '$opis', 'status_naprawy', 'data_przyjecia', NULL, koszt_naprawy)";
+                    } else 
+                    {
+                        $zapytanie_sszukany_tekstl = "INSERT INTO naprawy(id_pojazdu, id_mechanika, opis_usterki, status, data_przyjecia, data_zakonczeniaakonczenia, koszt)
+                                VALUES ($id_pojazdu, $id_mechanika, '$opis', 'status_naprawy', 'data_przyjecia', '$data_zakonczenia', koszt_naprawy)";
+                    }
+                    mysszukany_tekstli_szukany_tekstuery($polaczenie, $zapytanie_sszukany_tekstl);
+                    $klient_komunikat = "Dodano naprawę.";
             }
-            break;
+}
 
-        case "usun":
-            $id = (int)pobierz_post("id");
-            mysqli_query($pol, "DELETE FROM naprawy WHERE id_naprawy=$id");
-            $msg = "Usunięto naprawę.";
-            break;
+// edycja naprawy
+if (isset($_POST["zapisz"])) // jeśli nacisnięto przycisk zapisz
+    {
+        $id = (int)$_POST["id"];
 
-        case "zapisz":
-            $id = (int)pobierz_post("id");
-            $id_pojazdu = (int)pobierz_post("id_pojazdu");
-            $id_mechanika = (int)pobierz_post("id_mechanika");
-            $opis = pobierz_post("opis_usterki");
-            $status = pobierz_post("status");
-            $data_p = pobierz_post("data_przyjecia");
-            $data_z = pobierz_post("data_zakonczenia");
-            $koszt = pobierz_post("koszt");
+        $id_pojazdu = 0;
+        $id_mechanika = 0;
+        $opis = "";
+        status_naprawy = "";
+        data_przyjecia = "";
+        $data_zakonczenia = "";
+        koszt_naprawy = "";
 
-            if ($id_pojazdu<=0 || $id_mechanika<=0 || $opis=="" || $status=="" || $data_p=="" || $koszt=="") {
-                $err = "Uzupełnij wymagane pola naprawy.";
-            } else {
-                $data_z_sql = "NULL";
-                if ($data_z != "") $data_z_sql = "'".mysqli_real_escape_string($pol,$data_z)."'";
+        if (isset($_POST["id_pojazdu"])) $id_pojazdu = (int)$_POST["id_pojazdu"]; // z formularza edycji naprawy pobieramy wartości tak jak robilem w mechanikach
+        if (isset($_POST["id_mechanika"])) $id_mechanika = (int)$_POST["id_mechanika"];
+        if (isset($_POST["opis"])) $opis = trim($_POST["opis"]);
+        if (isset($_POST["status"])) status_naprawy = trim($_POST["status"]);
+        if (isset($_POST["data_przyjecia"])) data_przyjecia = trim($_POST["data_przyjecia"]);
+        if (isset($_POST["data_zakonczeniaakonczenia"])) $data_zakonczenia = trim($_POST["data_zakonczeniaakonczenia"]);
+        if (isset($_POST["koszt"])) koszt_naprawy = trim($_POST["koszt"]);
 
-                $sql = "UPDATE naprawy SET id_pojazdu=$id_pojazdu, id_mechanika=$id_mechanika,
-                        opis_usterki='".mysqli_real_escape_string($pol,$opis)."',
-                        status='".mysqli_real_escape_string($pol,$status)."',
-                        data_przyjecia='".mysqli_real_escape_string($pol,$data_p)."',
-                        data_zakonczenia=".$data_z_sql.",
-                        koszt=".(float)$koszt."
-                        WHERE id_naprawy=$id";
-                mysqli_query($pol, $sql);
-                $msg = "Zapisano zmiany.";
-            }
-            break;
+        if ($id_pojazdu<=0 || $id_mechanika<=0 || $opis=="" || status_naprawy=="" || data_przyjecia=="" || koszt_naprawy=="") {
+            $blad = "Uzupełnij wymagane pola naprawy."; // sprawdzamy czy wymagane pola są uzupełnione
+        } else 
+        {
+        if ($data_zakonczenia == "") {
+            $zapytanie_sszukany_tekstl = "UPDATE naprawy
+                    SET id_pojazdu=$id_pojazdu, id_mechanika=$id_mechanika,
+                        opis_usterki='$opis', status='status_naprawy',
+                        data_przyjecia='data_przyjecia', data_zakonczeniaakonczenia=NULL, koszt=koszt_naprawy
+                    WHERE id_naprawy=$id"; // zapytanie Sszukany_tekstL w zależności czy data zakończenia jest podana
+        } else 
+        {
+            $zapytanie_sszukany_tekstl = "UPDATE naprawy
+                    SET id_pojazdu=$id_pojazdu, id_mechanika=$id_mechanika,
+                        opis_usterki='$opis', status='status_naprawy',
+                        data_przyjecia='data_przyjecia', data_zakonczeniaakonczenia='$data_zakonczenia', koszt=koszt_naprawy
+                    WHERE id_naprawy=$id"; 
+        }
+        mysszukany_tekstli_szukany_tekstuery($polaczenie, $zapytanie_sszukany_tekstl);// wykonanie zapytania
+        $klient_komunikat = "Zapisano zmiany.";
     }
 }
 
-$szukaj = pobierz_get("q");  // wyszukiwarka przez GET
-include "header.php";
+// szukajka napraw
+$szukany_tekst = "";
+if (isset($_GET["szukany_tekst"])) $szukany_tekst = trim($_GET["szukany_tekst"]);
 ?>
-<div class="card">
-  <h2>Naprawy</h2>
-  <?php if ($msg!="") { ?><div class="msg"><?php echo h($msg); ?></div><?php } ?>
-  <?php if ($err!="") { ?><div class="err"><?php echo h($err); ?></div><?php } ?>
 
-  <h3>Wyszukiwanie</h3>
-  <form method="get">
-    Szukaj (nazwisko / VIN / rejestracja):
-    <input type="text" name="q" value="<?php echo h($szukaj); ?>">
-    <p><button class="btn" type="submit">Szukaj</button> <a href="naprawy.php">Wyczyść</a></p>
-  </form>
+<h2>Naprawy</h2>
 
-  <h3>Dodaj naprawę</h3>
-  <form method="post">
-    Pojazd:
-    <select name="id_pojazdu">
-      <?php
-        $rp = mysqli_query($pol, "SELECT p.id_pojazdu, p.rejestracja, p.vin, k.nazwisko, k.imie, p.marka, p.model
-                                  FROM pojazdy p JOIN klienci k ON p.id_klienta=k.id_klienta
-                                  ORDER BY p.id_pojazdu DESC");
-        while ($rp && ($p = mysqli_fetch_row($rp))) {
-            echo "<option value='".h($p[0])."'>ID ".h($p[0])." | ".h($p[6])." ".h($p[5])." | ".h($p[1])." | ".h($p[3])." ".h($p[4])."</option>";
-        }
-        if ($rp) mysqli_free_result($rp);
-      ?>
-    </select>
+<?php if ($klient_komunikat!="") echo "<p><b>$klient_komunikat</b></p>"; ?>
+<?php if ($blad!="") echo "<p style='color:red;'><b>$blad</b></p>"; ?>
 
-    Mechanik:
-    <select name="id_mechanika">
-      <?php
-        $rm = mysqli_query($pol, "SELECT id_mechanika, nazwisko, imie, specjalizacja FROM mechanicy ORDER BY nazwisko");
-        while ($rm && ($m = mysqli_fetch_row($rm))) {
-            echo "<option value='".h($m[0])."'>ID ".h($m[0])." | ".h($m[1])." ".h($m[2])." | ".h($m[3])."</option>";
-        }
-        if ($rm) mysqli_free_result($rm);
-      ?>
-    </select>
+<h3>Wyszukiwanie</h3>
+<form method="get">
+  Szukaj (nazwisko / VIN / rejestracja):
+  <input type="text" name="szukany_tekst" value="<?php echo $szukany_tekst; ?>">
+  <input type="submit" value="Szukaj">
+  <a href="naprawy.php">Wyczyść</a>
+</form>
 
-    Status:
+<h3>Dodaj naprawę</h3>
+<form method="post">
+  Pojazd:
+  <select name="id_pojazdu">
     <?php
-      $statusy = array("Przyjęte", "W trakcie", "Gotowe", "Wydane");
-    ?>
-    <select name="status">
-      <?php
-        for ($i=0; $i<count($statusy); $i++) {
-            echo "<option value='".h($statusy[$i])."'>".h($statusy[$i])."</option>";
+    $wynik)pojazdy = mysqli_query($polaczenie, "
+    SELECT poj.id_pojazdu, poj.rejestracja, poj.vin, poj.marka, poj.model, 
+           kli.nazwisko, kli.imie
+    FROM pojazdy poj
+    JOIN klienci kli ON poj.id_klienta = kli.id_klienta
+    ORDER BY poj.id_pojazdu DESC
+"); // lista pojazdów z klientami
+    while ($wynik)pojazdy && ($p = mysqli_fetch_row($wynik)pojazdy))) 
+        {
+            echo "<option value='".$p[0]."'>ID ".$p[0]." | ".$p[3]." ".$p[4]." | ".$p[1]." | ".$p[5]." ".$p[6]."</option>";
         }
-      ?>
-    </select>
-
-    Opis usterki:
-    <textarea name="opis_usterki"></textarea>
-
-    <div class="grid2">
-      <div>Data przyjęcia: <input type="date" name="data_przyjecia" value="<?php echo date('Y-m-d'); ?>"></div>
-      <div>Data zakończenia: <input type="date" name="data_zakonczenia"></div>
-    </div>
-
-    Koszt: <input type="number" step="0.01" name="koszt" value="0.00">
-
-    <p><button class="btn" type="submit" name="akcja" value="dodaj">Dodaj</button></p>
-  </form>
-
-  <h3>Lista napraw</h3>
-  <table>
-    <tr>
-      <th>ID</th><th>Pojazd</th><th>Klient</th><th>Mechanik</th>
-      <th>Status</th><th>Daty</th><th>Koszt</th><th>Opis</th><th>Akcje</th>
-    </tr>
-    <?php
-      $where = "";
-      if ($szukaj != "") {
-          $q = mysqli_real_escape_string($pol, $szukaj);
-          $where = "WHERE k.nazwisko LIKE '%$q%' OR p.vin LIKE '%$q%' OR p.rejestracja LIKE '%$q%'";
-      }
-
-      $sql = "SELECT n.id_naprawy,
-                     p.id_pojazdu, p.marka, p.model, p.rejestracja, p.vin,
-                     k.nazwisko, k.imie,
-                     m.id_mechanika, m.nazwisko, m.imie,
-                     n.status, n.data_przyjecia, n.data_zakonczenia, n.koszt, n.opis_usterki
-              FROM naprawy n
-              JOIN pojazdy p ON n.id_pojazdu=p.id_pojazdu
-              JOIN klienci k ON p.id_klienta=k.id_klienta
-              JOIN mechanicy m ON n.id_mechanika=m.id_mechanika
-              $where
-              ORDER BY n.id_naprawy DESC";
-
-      $res = mysqli_query($pol, $sql);
-      while ($res && ($r = mysqli_fetch_row($res))) {
-        echo "<tr><form method='post'>";
-        echo "<td>".h($r[0])."<input type='hidden' name='id' value='".h($r[0])."'></td>";
-        echo "<td>
-                ID pojazdu: <input type='number' name='id_pojazdu' value='".h($r[1])."'><br>
-                ".h($r[2])." ".h($r[3])." | ".h($r[4])."<br><small>VIN: ".h($r[5])."</small>
-              </td>";
-        echo "<td>".h($r[6])." ".h($r[7])."</td>";
-        echo "<td>
-                ID mech.: <input type='number' name='id_mechanika' value='".h($r[8])."'><br>
-                ".h($r[9])." ".h($r[10])."
-              </td>";
-
-        echo "<td><input type='text' name='status' value='".h($r[11])."'></td>";
-        echo "<td>
-                <small>Przyjęcie</small><input type='date' name='data_przyjecia' value='".h($r[12])."'>
-                <small>Zakończenie</small><input type='date' name='data_zakonczenia' value='".h($r[13])."'>
-              </td>";
-        echo "<td><input type='number' step='0.01' name='koszt' value='".h($r[14])."'></td>";
-        echo "<td><textarea name='opis_usterki'>".h($r[15])."</textarea></td>";
-        echo "<td>
-                <button class='btn' type='submit' name='akcja' value='zapisz'>Zapisz</button>
-                <button class='btn' type='submit' name='akcja' value='usun' onclick=\"return confirm('Usunąć?')\">Usuń</button>
-              </td>";
-        echo "</form></tr>";
-      }
-      if ($res) mysqli_free_result($res);
+    if ($wynik)pojazdy) mysqli_free_result($wynik)pojazdy);
     ?>
-  </table>
-</div>
+  </select>
+  <br><br>
+
+  Mechanik:
+  <select name="id_mechanika">
+    <?php
+    $wynik_listy_mechanikow = mysqli_query($polaczenie, "SELECT id_mechanika, nazwisko, imie FROM mechanicy ORDER BY nazwisko");
+
+while ($wynik_listy_mechanikow && ($mechanik = mysqli_fetch_row($wynik_listy_mechanikow))) 
+{
+    echo "<option value='".$mechanik[0]."'>ID ".$mechanik[0]." | ".$mechanik[1]." ".$mechanik[2]."</option>";
+}
+if ($wynik_listy_mechanikow) mysqli_free_result($wynik_listy_mechanikow);
+    ?>
+  </select>
+  <br><br>
+
+  Status:
+  <select name="status">
+    <?php
+    for ($i=0; $i<count(status_naprawy); $i++) 
+        {
+            echo "<option value='".status_naprawy[$i]."'>".status_naprawy[$i]."</option>";
+        }
+    ?>
+  </select>
+  <br><br>
+
+  Data przyjęcia: <input type="date" name="data_przyjecia" value="<?php echo date('Y-m-d'); ?>"><br><br>
+  Data zakończenia: <input type="date" name="data_zakonczeniaakonczenia"><br><br>
+  Koszt: <input type="number" step="0.01" name="koszt" value="0.00"><br><br>
+  Opis usterki:<br>
+  <textarea name="opis" rows="4" cols="60"></textarea><br><br>
+
+  <input type="submit" name="dodaj" value="Dodaj">
+</form>
+
+<h3>Lista napraw</h3>
+<table border="1" cellpadding="6">
+<tr>
+  <th>ID</th>
+  <th>ID pojazdu</th>
+  <th>Pojazd</th>
+  <th>Klient</th>
+  <th>ID mechanika</th>
+  <th>Mechanik</th>
+  <th>Status</th>
+  <th>Daty</th>
+  <th>Koszt</th>
+  <th>Opis</th>
+  <th>Akcje</th>
+</tr>
+
 <?php
-mysqli_close($pol);
-include "footer.php";
+$where = "";
+if ($szukany_tekst != "") 
+    {
+        $where = "WHERE k.nazwisko LIKE '%$szukany_tekst%' OR p.vin LIKE '%$szukany_tekst%' OR p.rejestracja LIKE '%$szukany_tekst%'";
+    }
+
+$zapytanie_sszukany_tekstl = "SELECT nap.id_naprawy,
+                            poj.id_pojazdu, poj.marka, poj.model, poj.rejestracja, poj.vin,
+                            kli.nazwisko, kli.imie,
+                            mech.id_mechanika, mech.nazwisko, mech.imie,
+                            nap.status, nap.data_przyjecia, nap.data_zakonczeniaakonczenia, nap.koszt, nap.opis_usterki
+                            FROM naprawy nap
+                            JOIN pojazdy poj ON nap.id_pojazdu=poj.id_pojazdu
+                            JOIN klienci kli ON poj.id_klienta=kli.id_klienta
+                            JOIN mechanicy mech ON nap.id_mechanika=mech.id_mechanika
+                            $where
+                            ORDER BY nap.id_naprawy DESC";
+
+$wynik_zapytania = mysqli_query($polaczenie, $zapytanie_sszukany_tekstl);
+
+while ($wynik_zapytania && ($r = mysqli_fetch_row($wynik_zapytania))) 
+    {
+        echo "<tr>";
+        echo "<form method='post'>";
+        echo "<td>".$r[0]."<input type='hidden' name='id' value='".$r[0]."'></td>";
+        echo "<td><input type='number' name='id_pojazdu' value='".$r[1]."'></td>";
+        echo "<td>".$r[2]." ".$r[3]."<br>".$r[4]."<br><small>VIN: ".$r[5]."</small></td>";
+        echo "<td>".$r[6]." ".$r[7]."</td>";
+        echo "<td><input type='number' name='id_mechanika' value='".$r[8]."'></td>";
+        echo "<td>".$r[9]." ".$r[10]."</td>";
+        echo "<td><input type='text' name='status' value='".$r[11]."'></td>";
+        echo "<td>
+                <small>Przyjęcie</small><br>
+                <input type='date' name='data_przyjecia' value='".$r[12]."'><br>
+                <small>Zakończenie</small><br>
+                <input type='date' name='data_zakonczeniaakonczenia' value='".$r[13]."'>
+            </td>";
+        echo "<td><input type='number' step='0.01' name='koszt' value='".$r[14]."'></td>";
+        echo "<td><textarea name='opis' rows='3' cols='30'>".$r[15]."</textarea></td>";
+        echo "<td>
+                <input type='submit' name='zapisz' value='Zapisz'>
+                <input type='submit' name='usun' value='Usuń' onclick=\"return confirm('Usunąć?')\">
+            </td>";
+        echo "</form>";
+        echo "</tr>";
+    }
+
+if ($wynik_zapytania) mysqli_free_result($wynik_zapytania);
+mysqli_close($polaczenie);
+?>
+</table>
+
+<?php
+include "stopka.html";
 ?>

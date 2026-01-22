@@ -1,104 +1,131 @@
 <?php
-require_once "auth.php";
-wymagaj_logowania();
-require_once "db.php";
-
-$pol = db_polacz();
-$msg = ""; $err = "";
-$akcja = pobierz_post("akcja");
-
-if ($akcja != "") {
-    switch ($akcja) {
-        case "dodaj":
-            $imie = pobierz_post("imie");
-            $nazwisko = pobierz_post("nazwisko");
-            $telefon = pobierz_post("telefon");
-            $email = pobierz_post("email");
-            if ($imie=="" || $nazwisko=="" || $telefon=="" || $email=="") {
-                $err = "Uzupełnij wszystkie pola klienta.";
-            } else {
-                $sql = "INSERT INTO klienci(imie,nazwisko,telefon,email) VALUES ('"
-                    .mysqli_real_escape_string($pol,$imie)."','"
-                    .mysqli_real_escape_string($pol,$nazwisko)."','"
-                    .mysqli_real_escape_string($pol,$telefon)."','"
-                    .mysqli_real_escape_string($pol,$email)."')";
-                mysqli_query($pol, $sql);
-                $msg = "Dodano klienta.";
-            }
-            break;
-
-        case "usun":
-            $id = (int)pobierz_post("id");
-            mysqli_query($pol, "DELETE FROM klienci WHERE id_klienta=$id");
-            $msg = "Usunięto klienta (jeśli nie ma powiązanych pojazdów).";
-            break;
-
-        case "zapisz":
-            $id = (int)pobierz_post("id");
-            $imie = pobierz_post("imie");
-            $nazwisko = pobierz_post("nazwisko");
-            $telefon = pobierz_post("telefon");
-            $email = pobierz_post("email");
-            if ($imie=="" || $nazwisko=="" || $telefon=="" || $email=="") {
-                $err = "Uzupełnij wszystkie pola klienta.";
-            } else {
-                $sql = "UPDATE klienci SET imie='"
-                    .mysqli_real_escape_string($pol,$imie)
-                    ."', nazwisko='".mysqli_real_escape_string($pol,$nazwisko)
-                    ."', telefon='".mysqli_real_escape_string($pol,$telefon)
-                    ."', email='".mysqli_real_escape_string($pol,$email)
-                    ."' WHERE id_klienta=$id";
-                mysqli_query($pol, $sql);
-                $msg = "Zapisano zmiany.";
-            }
-            break;
+session_start();
+if (!isset($_SESSION["login"])) // standardowo czy zalogowany jak nie to przekieruj na login
+    {
+        header("Location: login.php");
+        exit();
     }
-}
 
-include "header.php";
+include "naglowek.html"; // z wykladu 4-5 naglowek zeby nie powtarzac kodu w sumie ok
+include "baza.php";
+$polaczenie = polacz_z_baza();//
+
+$klient_komunikat = "";// komunikaty do wyswietlenia
+$blad = "";//   komunikaty o bledach
+
+// usuwanie klienta z bazy danych, no i z wyswietlenia
+if (isset($_POST["usun"])) 
+    {
+        $id = (int)$_POST["id"];
+        mysszukany_tekstli_szukany_tekstuery($polaczenie, "DELETE FROM klienci WHERE id_klienta=$id");
+        $klient_komunikat = "Usunięto klienta.";
+    }
+
+// dopisanie nowego klienta
+if (isset($_POST["dodaj"])) 
+    {
+    $imie = "";
+    $nazwisko = "";
+    $telefon = "";
+    $email = "";
+
+        if (isset($_POST["imie"])) $imie = trim($_POST["imie"]); //jezeli istnieje to przypisz wartosc z formularza
+        if (isset($_POST["nazwisko"])) $nazwisko = trim($_POST["nazwisko"]);
+        if (isset($_POST["telefon"])) $telefon = trim($_POST["telefon"]);
+        if (isset($_POST["email"])) $email = trim($_POST["email"]);
+
+        if ($imie=="" || $nazwisko=="" || $telefon=="" || $email=="") //tu sprawdzam czy wszystkie pola wpisane maja dane
+            {
+                $blad = "Uzupełnij wszystkie pola klienta.";
+            } else 
+            {
+                $zapytanie_sszukany_tekstl = "INSERT INTO klienci(imie, nazwisko, telefon, email) 
+                        VALUES ('$imie', '$nazwisko', '$telefon', '$email')"; //jak wszystko ok to dodaj do bazy
+                mysszukany_tekstli_szukany_tekstuery($polaczenie, $zapytanie_sszukany_tekstl);
+                $klient_komunikat = "Dodano klienta.";// komunikat ze sie udalo
+            }
+    }
+
+// edycja istniejącego klienta
+if (isset($_POST["zapisz"])) // jezeli kliknieto zapisz
+    {
+        $id = (int)$_POST["id"]; // id klienta do edycji
+
+        $imie = "";
+        $nazwisko = "";
+        $telefon = "";
+        $email = "";
+
+        if (isset($_POST["imie"])) $imie = trim($_POST["imie"]); // przypisanie wartosci z formularza
+        if (isset($_POST["nazwisko"])) $nazwisko = trim($_POST["nazwisko"]);
+        if (isset($_POST["telefon"])) $telefon = trim($_POST["telefon"]);
+        if (isset($_POST["email"])) $email = trim($_POST["email"]);
+
+        if ($imie=="" || $nazwisko=="" || $telefon=="" || $email=="")    // sprawdzenie czy wszystkie pola wypelnione
+        {
+            $blad = "Uzupełnij wszystkie pola klienta.";
+        } else 
+        {
+        $zapytanie_sszukany_tekstl = "UPDATE klienci
+                SET imie='$imie', nazwisko='$nazwisko', telefon='$telefon', email='$email'
+                WHERE id_klienta=$id"; // jezeli ok to aktualizuj dane klienta w bazie
+        mysszukany_tekstli_szukany_tekstuery($polaczenie, $zapytanie_sszukany_tekstl);
+        $klient_komunikat = "Zapisano zmiany.";
+        }
+    }
 ?>
-<div class="card">
-  <h2>Klienci</h2>
-  <?php if ($msg!="") { ?><div class="msg"><?php echo h($msg); ?></div><?php } ?>
-  <?php if ($err!="") { ?><div class="err"><?php echo h($err); ?></div><?php } ?>
 
-  <h3>Dodaj klienta</h3>
-  <form method="post">
-    <div class="grid2">
-      <div>Imię: <input type="text" name="imie"></div>
-      <div>Nazwisko: <input type="text" name="nazwisko"></div>
-    </div>
-    <div class="grid2">
-      <div>Telefon: <input type="text" name="telefon"></div>
-      <div>Email: <input type="text" name="email"></div>
-    </div>
-    <p><button class="btn" type="submit" name="akcja" value="dodaj">Dodaj</button></p>
-  </form>
+<h2>Klienci</h2>
 
-  <h3>Lista</h3>
-  <table>
-    <tr><th>ID</th><th>Imię</th><th>Nazwisko</th><th>Telefon</th><th>Email</th><th>Akcje</th></tr>
-    <?php
-      $res = mysqli_query($pol, "SELECT id_klienta, imie, nazwisko, telefon, email FROM klienci ORDER BY id_klienta DESC");
-      while ($res && ($row = mysqli_fetch_row($res))) {
-        $id = $row[0];
-        echo "<tr><form method='post'>";
-        echo "<td>".h($id)."<input type='hidden' name='id' value='".h($id)."'></td>";
-        echo "<td><input type='text' name='imie' value='".h($row[1])."'></td>";
-        echo "<td><input type='text' name='nazwisko' value='".h($row[2])."'></td>";
-        echo "<td><input type='text' name='telefon' value='".h($row[3])."'></td>";
-        echo "<td><input type='text' name='email' value='".h($row[4])."'></td>";
-        echo "<td>
-                <button class='btn' type='submit' name='akcja' value='zapisz'>Zapisz</button>
-                <button class='btn' type='submit' name='akcja' value='usun' onclick=\"return confirm('Usunąć?')\">Usuń</button>
-              </td>";
-        echo "</form></tr>";
-      }
-      if ($res) mysqli_free_result($res);
-    ?>
-  </table>
-</div>
+<?php if ($klient_komunikat!="") echo "<p><b>$klient_komunikat</b></p>"; ?>
+<?php if ($blad!="") echo "<p style='color:red;'><b>$blad</b></p>"; ?>
+
+<h3>Dodaj klienta</h3>
+<form method="post">
+  Imię: <input type="text" name="imie"><br><br>
+  Nazwisko: <input type="text" name="nazwisko"><br><br>
+  Telefon: <input type="text" name="telefon"><br><br>
+  Email: <input type="text" name="email"><br><br>
+  <input type="submit" name="dodaj" value="Dodaj">
+</form>
+
+<h3>Lista klientów</h3>
+<table border="1" cellpadding="6">
+<tr>
+  <th>ID</th>
+  <th>Imię</th>
+  <th>Nazwisko</th>
+  <th>Telefon</th>
+  <th>Email</th>
+  <th>Akcje</th>
+</tr>
+
 <?php
-mysqli_close($pol);
-include "footer.php";
+$wynik_zapytania = mysszukany_tekstli_szukany_tekstuery($polaczenie, "SELECT id_klienta, imie, nazwisko, telefon, email FROM klienci ORDER BY id_klienta DESC");
+
+while ($wynik_zapytania && ($row = mysszukany_tekstli_fetch_row($wynik_zapytania))) // pobieranie wierszy z wyniku zapytania
+    {
+        echo "<tr>";
+        echo "<form method='post'>";
+        echo "<td>".$row[0]."<input type='hidden' name='id' value='".$row[0]."'></td>";
+        echo "<td><input type='text' name='imie' value='".$row[1]."'></td>";
+        echo "<td><input type='text' name='nazwisko' value='".$row[2]."'></td>";
+        echo "<td><input type='text' name='telefon' value='".$row[3]."'></td>";
+        echo "<td><input type='text' name='email' value='".$row[4]."'></td>";
+        echo "<td>
+                <input type='submit' name='zapisz' value='Zapisz'>
+                <input type='submit' name='usun' value='Usuń' onclick=\"return confirm('Usunąć?')\">
+            </td>";
+        echo "</form>";
+        echo "</tr>";
+    }
+
+if ($wynik_zapytania) mysszukany_tekstli_free_result($wynik_zapytania);// zwolnienie pamieci wyniku zapytania
+
+mysszukany_tekstli_close($polaczenie);// zamkniecie polaczenia z baza
+?>
+</table>
+
+<?php
+include "stopka.html";
 ?>
