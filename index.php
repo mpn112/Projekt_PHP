@@ -33,6 +33,10 @@ if (!isset($_SESSION["login"])) // sprawdzamy czy jestesmy zalogowani
       <a class="menu-item" href="pojazdy.php">🚗 Pojazdy</a>
       <a class="menu-item" href="naprawy.php">🛠️ Naprawy</a>
     </div>
+    
+    <?php if ($_SESSION["login"] === "admin") { ?>
+      <a class="menu-item" href="ustawienia.php">⚙️ Ustawienia bazy</a>
+    <?php } ?>
 
     <p style="margin-top:15px;">
       <a class="btn danger" href="wyloguj.php">Wyloguj</a>

@@ -71,6 +71,26 @@ function pobierz_get($nazwa)
     if (isset($_GET[$nazwa])) return trim($_GET[$nazwa]);
     return "";
 }
+function zapisz_konfiguracje($konfiguracja)
+{
+    // zapisujemy dokładnie te 4 klucze
+    $klucze = array("serwer", "uzytkownik", "haslo", "baza");
+
+    $tekst = "";
+    for ($i = 0; $i < count($klucze); $i++)
+    {
+        $k = $klucze[$i];
+        $v = isset($konfiguracja[$k]) ? trim($konfiguracja[$k]) : "";
+
+        // zabezpieczenie: żeby nie dało się wstrzyknąć nowych linii do pliku
+        $v = str_replace(array("\r", "\n"), "", $v);
+
+        $tekst .= $k . "=" . $v . "\n";
+    }
+
+    $ok = file_put_contents("konfiguracja.txt", $tekst);
+    return ($ok !== false);
+}
 
 
 

@@ -1,16 +1,29 @@
+<?php
+// naglowek.php
+?>
 <!doctype html>
 <html lang="pl">
 <head>
   <meta charset="utf-8">
-  <title>Serwis samochodowy Marcin Olejnik</title>
+  <title>Serwis samochodowy</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<p>
-  <a href="index.php">Menu</a> |
-  <a href="mechanicy.php">Mechanicy</a> |
-  <a href="klienci.php">Klienci</a> |
-  <a href="pojazdy.php">Pojazdy</a> |
-  <a href="naprawy.php">Naprawy</a> |
-  <a href="wyloguj.php">Wyloguj</a>
-</p>
-<hr>
+
+<div class="top">
+  <div><b>Serwis samochodowy</b></div>
+  <div>
+    <a href="index.php">Menu</a>
+    <a href="mechanicy.php">Mechanicy</a>
+    <a href="klienci.php">Klienci</a>
+    <a href="pojazdy.php">Pojazdy</a>
+    <a href="naprawy.php">Naprawy</a>
+    <?php if (isset($_SESSION["login"]) && $_SESSION["login"] === "admin") { ?>
+      <a href="ustawienia.php">Ustawienia bazy</a>
+    <?php } ?>
+    <a href="wyloguj.php">Wyloguj</a>
+  </div>
+</div>
+
+<div class="box">
+  <div class="card">

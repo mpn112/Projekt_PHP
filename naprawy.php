@@ -192,7 +192,7 @@ Status:
 <?php
 for ($i=0; $i<count($statusy_naprawy); $i++) // generowanie opcji statusow z tablicy
     {
-        echo "<option value=".$statusy_naprawy[$i]."'>".$statusy_naprawy[$i]."</option>";
+        echo "<option value='".$statusy_naprawy[$i]."'>".$statusy_naprawy[$i]."</option>";
     }
 ?>
 </select>
