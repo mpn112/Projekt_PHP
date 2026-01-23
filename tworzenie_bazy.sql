@@ -1,4 +1,5 @@
-/-- Skrypt tworzący bazę danych i tabele !!!commit na git po modyfikacji!!! dodanie uzytkownika admin z hasłem 'admin123'--
+-- Skrypt tworzący bazę danych i tabele (commit na git po modyfikacji)
+-- Dodanie użytkownika admin z hasłem 'admin123'
 CREATE DATABASE IF NOT EXISTS serwis CHARACTER SET utf8mb4 COLLATE utf8mb4_polish_ci;
 USE serwis;
 
@@ -73,6 +74,6 @@ INSERT INTO naprawy (id_pojazdu, id_mechanika, opis_usterki, status, data_przyje
 INSERT INTO uzytkownicy(login, haslo_hash)
 VALUES (
   'admin',
-  '$2y$10$L.BUj2HA3S8XUCCvtszukany_tekstztwOCCnDkfnBNuEb78Eizs674W/dbj/OS0W'
+  '$2y$10$M/D1NG53neOTNnZbcCnWjet/pJ6GgF4eOQMDxYIwC2eaOG4U2LBIO'
 );
 
