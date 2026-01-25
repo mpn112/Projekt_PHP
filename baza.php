@@ -3,10 +3,10 @@
 function wczytaj_konfiguracje() // z konfiguracja.txt pobieram dane
 {
 $konfiguracja = array(); // tworze pusta tablice asocjacyjna czyli klucz wartosc z wyklady 4-5
-$plik = fopen("konfiguracja.txt", "r");
+$plik = fopen("konfiguracja.txt", "r");// otwieram plik do odczytu
     if ($plik == false) // jezeli nie ma pliku to zwracam pusta tablice
         {
-            return $konfiguracja;
+            return $konfiguracja;// zwracam pusta tablice
         }
 
         while (!feof($plik))// dopoki nie koniec pliku 
@@ -25,8 +25,8 @@ $plik = fopen("konfiguracja.txt", "r");
                 }
         }
 
-    fclose($plik);
-    return $konfiguracja;
+    fclose($plik);// zamykam plik
+    return $konfiguracja; // zwracam tablice asocjacyjna
 }
 
 
@@ -36,10 +36,37 @@ function polacz_z_baza()
     $konfiguracja = wczytaj_konfiguracje();// pobieram konfiguracje z pliku txt
 
     // wartości domyślne, gdy nie ma wpisu w txt
-    $adres_serwera = isset($konfiguracja["serwer"]) ? $konfiguracja["serwer"] : "127.0.0.1";
-    $uzytkownik    = isset($konfiguracja["uzytkownik"]) ? $konfiguracja["uzytkownik"] : "root";
-    $haslo         = isset($konfiguracja["haslo"]) ? $konfiguracja["haslo"] : "";
-    $nazwa_bazy    = isset($konfiguracja["baza"]) ? $konfiguracja["baza"] : "serwis";
+    if (isset($konfiguracja["serwer"])) // jezeli istnieje to przypisuje wartosc z pliku txt
+        {
+            $adres_serwera = $konfiguracja["serwer"];
+        } else 
+        {
+            $adres_serwera = "127.0.0.1";       
+        }
+
+    if (isset($konfiguracja["uzytkownik"])) // to samo tylko dla uzytkownika
+        {
+            $uzytkownik = $konfiguracja["uzytkownik"];
+        } else 
+        {
+            $uzytkownik = "root";
+        }
+
+    if (isset($konfiguracja["haslo"])) // to samo tylko dla hasla
+        {
+            $haslo = $konfiguracja["haslo"];
+        } else 
+        {
+            $haslo = "";
+        }
+
+    if (isset($konfiguracja["baza"])) //j.w.
+        {
+            $nazwa_bazy = $konfiguracja["baza"];
+        } else 
+        {
+            $nazwa_bazy = "serwis";
+        }
 
  
     $polaczenie = mysqli_connect($adres_serwera, $uzytkownik, $haslo, $nazwa_bazy);// probuje sie polaczyc z baza
@@ -58,7 +85,7 @@ function polacz_z_baza()
 }
 
 
-function pobierz_post($nazwa)
+function pobierz_formularza($nazwa)
 {
     if (isset($_POST[$nazwa])) return trim($_POST[$nazwa]);// jezeli istnieje to zwracam wartosc z formularza
 
@@ -66,7 +93,7 @@ function pobierz_post($nazwa)
 }
 
 
-function pobierz_get($nazwa)
+function wez_z_zdresu($nazwa)
 {
     if (isset($_GET[$nazwa])) return trim($_GET[$nazwa]);
     return "";
@@ -76,20 +103,20 @@ function zapisz_konfiguracje($konfiguracja)
     // zapisujemy dokładnie te 4 klucze
     $klucze = array("serwer", "uzytkownik", "haslo", "baza");
 
-    $tekst = "";
+    $zawartosc_txt = "";
     for ($i = 0; $i < count($klucze); $i++)
     {
-        $k = $klucze[$i];
-        $v = isset($konfiguracja[$k]) ? trim($konfiguracja[$k]) : "";
+        $klucz = $klucze[$i];
+        $wartosc = isset($konfiguracja[$klucz]) ? trim($konfiguracja[$klucz]) : "";
 
         // zabezpieczenie: żeby nie dało się wstrzyknąć nowych linii do pliku
-        $v = str_replace(array("\r", "\n"), "", $v);
+        $wartosc = str_replace(array("\r", "\n"), "", $wartosc);
 
-        $tekst .= $k . "=" . $v . "\n";
+        $zawartosc_txt .= $klucz . "=" . $wartosc . "\n";
     }
 
-    $ok = file_put_contents("konfiguracja.txt", $tekst);
-    return ($ok !== false);
+    $czy_zapisano = file_put_contents("konfiguracja.txt", $zawartosc_txt);
+    return ($czy_zapisano !== false);
 }
 
 

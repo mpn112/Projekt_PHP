@@ -9,14 +9,14 @@ body
   background: #f5f5f5;
   margin: 0;
   color: #222;
-
-  /* żeby stopka była na dole */
+/* 
+ <! zeby stopka byla na dole> */
   display: flex;
   flex-direction: column;
   min-height: 100vh;
 }
 
-/* ===== Góra / menu ===== */
+/*to jest zeby kontener glowny rozciagal sie na caly ekran */
 .top 
 {
   background: #222;
@@ -27,7 +27,7 @@ body
   align-items: center;
   gap: 10px;
 }
-
+/* linki w topie */
 .top a {
   color: #fff;
   text-decoration: none;
@@ -36,12 +36,12 @@ body
 }
 .top a:hover { text-decoration: underline; opacity: 1; }
 
-/* ===== Kontener treści ===== */
+/* to jest glowny kontener */
 .box {
   padding: 16px;
   flex: 1; /* wypycha stopkę na dół */
 }
-
+/*karta z białym tłem*/
 .card 
 {
   background: #fff;
@@ -51,32 +51,32 @@ body
   max-width: 1200px;
   margin: 0 auto;
 }
-
+/* to do naglowkow */
 h2 { margin: 0 0 12px 0; }
 h3 { margin: 18px 0 10px 0; }
 
-/* ===== Komunikaty ===== */
-.msg, .err 
+/* to do kumunikatow bledow i informacji */
+.msg, blad
 {
   padding: 10px;
   margin: 10px 0;
   border-radius: 8px;
   border: 1px solid transparent;
 }
-
+/* kolor informacji */
 .msg 
 {
   background: #e7f5ff;
   border-color: #b3d7ff;
 }
-
-.err 
+/* kolor bledow */
+.blad
 {
   background: #ffe7e7;
   border-color: #ffb3b3;
 }
 
-/* ===== Formularze (poza tabelą) ===== */
+/* do formularzy ale poza tabelami */
 input[type=text],
 input[type=number],
 input[type=date],
@@ -117,7 +117,7 @@ input:focus, textarea:focus, select:focus
   .grid2 { grid-template-columns: 1fr; }
 }
 
-/* ===== Przyciski / linki ===== */
+/*Przyciski / linki*/
 .btn, button.btn 
 {
   padding: 8px 12px;
@@ -135,14 +135,14 @@ input:focus, textarea:focus, select:focus
 a { color: #1a5cff; }
 a:hover { text-decoration: underline; }
 
-/* ===== Tabele ===== */
+/*Tabele*/
 table 
 {
   width: 100%;
   border-collapse: collapse;
   background: #fff;
 
-  /* to bardzo pomaga gdy jest dużo pól w komórkach */
+  /* to bardzo pomaga gdy jest duzo pol w komorkach */
   table-layout: fixed;
 }
 

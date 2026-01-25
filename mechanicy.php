@@ -14,7 +14,7 @@ $klient_komunikat = "";
 $blad = "";
 
 // tu usuwamy mechanikow
-if (isset($_POST["usun"])) 
+if (isset($_POST["usun"])) // sprawdzenie czy formularz został wysłany
 {
     $id = (int)$_POST["id"];
 
@@ -32,12 +32,12 @@ if (isset($_POST["usun"]))
         } else 
         {
             mysqli_query($polaczenie, "DELETE FROM mechanicy WHERE id_mechanika=$id");
-            $klient_komunikat = "Usunięto mechanika.";
+            $klient_komunikat = "Usunięto mechanika."; // komunikat dla klienta
         }
 }
 
 // tu dodawanie machanika
-if (isset($_POST["dodaj"])) 
+if (isset($_POST["dodaj"])) // sprawdzenie czy formularz został wysłany
 {
     $imie = "";
     $nazwisko = "";
@@ -65,7 +65,7 @@ if (isset($_POST["dodaj"]))
 // edycja mechanika
 if (isset($_POST["zapisz"])) 
 {
-    $id = (int)$_POST["id"];
+    $id = (int)$_POST["id"]; // pobranie id mechanika do edycji
 
     $imie = "";
     $nazwisko = "";
@@ -85,7 +85,7 @@ if (isset($_POST["zapisz"]))
             $spec_sql = mysqli_real_escape_string($polaczenie, $specjalizacja);
             $zapytanie_sql = "UPDATE mechanicy
                             SET imie='$imie_sql', nazwisko='$nazwisko_sql', specjalizacja='$spec_sql'
-                            WHERE id_mechanika=$id"; 
+                            WHERE id_mechanika=$id"; // tworzymy zapytanie SQL do aktualizacji danych mechanika
 
             mysqli_query($polaczenie, $zapytanie_sql);
 
@@ -108,7 +108,7 @@ if (isset($_POST["zapisz"]))
     }
 ?>
 
-<h3>Dodaj mechanika</h3>
+<h3>Dodaj mechanika</h3> <!-- formularz dodawania mechanika -->
 <form method="post">
   Imię: <input type="text" name="imie"><br><br>
   Nazwisko: <input type="text" name="nazwisko"><br><br>

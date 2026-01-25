@@ -21,35 +21,46 @@ $komunikat = "";
 $blad = "";
 
 // wczytanie aktualnej konfiguracji
-$cfg = wczytaj_konfiguracje();
+$konfiguracja = wczytaj_konfiguracje();
 
-$serwer = isset($cfg["serwer"]) ? $cfg["serwer"] : "127.0.0.1";
-$uzytkownik = isset($cfg["uzytkownik"]) ? $cfg["uzytkownik"] : "root";
-$haslo = isset($cfg["haslo"]) ? $cfg["haslo"] : "";
-$baza = isset($cfg["baza"]) ? $cfg["baza"] : "serwis";
+$serwer = isset($konfiguracja["serwer"]) ? $konfiguracja["serwer"] : "127.0.0.1";
+$uzytkownik = isset($konfiguracja["uzytkownik"]) ? $konfiguracja["uzytkownik"] : "root";
+$haslo = isset($konfiguracja["haslo"]) ? $konfiguracja["haslo"] : "";
+$baza = isset($konfiguracja["baza"]) ? $konfiguracja["baza"] : "serwis";
 
-if (isset($_POST["zapisz_cfg"])) {
-    $serwer = isset($_POST["serwer"]) ? trim($_POST["serwer"]) : "";
-    $uzytkownik = isset($_POST["uzytkownik"]) ? trim($_POST["uzytkownik"]) : "";
-    $haslo = isset($_POST["haslo"]) ? trim($_POST["haslo"]) : "";
-    $baza = isset($_POST["baza"]) ? trim($_POST["baza"]) : "";
+if (isset($_POST["zapisz_cfg"]))
+{
+    $serwer = "";
+    $uzytkownik = "";
+    $haslo = "";
+    $baza = "";
 
-    if ($serwer=="" || $uzytkownik=="" || $baza=="") {
-        $blad = "Uzupełnij: serwer, użytkownik i nazwa bazy.";
-    } else {
-        $nowa = array(
-            "serwer" => $serwer,
-            "uzytkownik" => $uzytkownik,
-            "haslo" => $haslo,
-            "baza" => $baza
-        );
+    if (isset($_POST["serwer"])) $serwer = trim($_POST["serwer"]);
+    if (isset($_POST["uzytkownik"])) $uzytkownik = trim($_POST["uzytkownik"]);
+    if (isset($_POST["haslo"])) $haslo = trim($_POST["haslo"]);
+    if (isset($_POST["baza"])) $baza = trim($_POST["baza"]);
 
-        if (zapisz_konfiguracje($nowa)) {
-            $komunikat = "Zapisano konfigurację do konfiguracja.txt";
-        } else {
-            $blad = "Nie udało się zapisać konfiguracja.txt (sprawdź uprawnienia).";
-        }
-    }
+    if ($serwer=="" || $uzytkownik=="" || $baza=="")
+      {
+          $blad = "Uzupełnij: serwer, użytkownik i nazwa bazy.";
+      }
+      else
+      {
+          $nowa_konfiguracja = array();
+          $nowa_konfiguracja["serwer"] = $serwer;
+          $nowa_konfiguracja["uzytkownik"] = $uzytkownik;
+          $nowa_konfiguracja["haslo"] = $haslo;
+          $nowa_konfiguracja["baza"] = $baza;
+
+          if (zapisz_konfiguracje($nowa_konfiguracja))
+          {
+              $komunikat = "Zapisano konfigurację do konfiguracja.txt";
+          }
+          else
+          {
+              $blad = "Nie udało się zapisać konfiguracja.txt (sprawdź uprawnienia).";
+          }
+      }
 }
 ?>
 

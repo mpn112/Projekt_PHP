@@ -1,71 +1,108 @@
 <?php
 session_start();
-if (!isset($_SESSION["login"])) { header("Location: login.php"); exit(); }
+if (!isset($_SESSION["login"])) 
+    { header("Location: login.php");
+        exit();
+    }
 
 // tylko admin
-if ($_SESSION["login"] !== "admin") { echo "<b>Brak uprawnień.</b>"; exit(); }
+if ($_SESSION["login"] !== "admin") // sprawdz czy admin
+     { echo "<b>Brak uprawnień.</b>";
+        exit(); 
+    }
 
 include "naglowek.html";
 include "baza.php";
-$polaczenie = polacz_z_baza();
+$polaczenie = polacz_z_baza(); // funkcja z pliku baza.php
 
 $komunikat = "";
 $blad = "";
 
-/* USUWANIE */
-if (isset($_POST["usun"])) {
+// Usuwanie mechnika
+if (isset($_POST["usun"]))
+{
     $id = (int)$_POST["id"];
+    $wynik_sprawdzenia_loginu = mysqli_query// sprawdzamy login użytkownika, żeby nie pozwolić usunąć admina
+    (
+        $polaczenie, "SELECT login FROM uzytkownicy WHERE id_uzytkownika=$id" // pobierz login użytkownika o danym id
+    );
 
-    // nie pozwól usunąć admina
-    $q = mysqli_query($polaczenie, "SELECT login FROM uzytkownicy WHERE id_uzytkownika=$id");
     $login = "";
-    if ($q && ($r = mysqli_fetch_row($q))) $login = $r[0];
-    if ($q) mysqli_free_result($q);
+    if ($wynik_sprawdzenia_loginu && ($wiersz = mysqli_fetch_row($wynik_sprawdzenia_loginu))) //jeśli zapytanie się powiodło i jest wynik
+    {
+        $login = $wiersz[0]; // pobierz login z wyniku zapytania
+    }
 
-    if ($login === "admin") {
+    if ($wynik_sprawdzenia_loginu) //jezeli wsio ok w zapytani
+    {
+        mysqli_free_result($wynik_sprawdzenia_loginu); // to czyscimy pamiec
+    }
+
+    if ($login === "admin") //jezeli login to admin to nie pozwalamy usunąć
+    {
         $blad = "Nie można usunąć konta admin.";
-    } else {
+    }
+    else
+    {
         mysqli_query($polaczenie, "DELETE FROM uzytkownicy WHERE id_uzytkownika=$id");
         $komunikat = "Usunięto użytkownika.";
     }
 }
 
-/* DODAWANIE */
-if (isset($_POST["dodaj"])) {
-    $login = isset($_POST["login"]) ? trim($_POST["login"]) : "";
-    $haslo = isset($_POST["haslo"]) ? trim($_POST["haslo"]) : "";
+//dodawanie uzytkownika
+if (isset($_POST["dodaj"]))
+{
+    $login = "";
+    $haslo = "";
 
-    if ($login=="" || $haslo=="") {
-        $blad = "Uzupełnij login i hasło.";
-    } else if (preg_match("/\s/", $login)) {
-        $blad = "Login nie może zawierać spacji.";
-    } else {
-        $login_sql = mysqli_real_escape_string($polaczenie, $login);
-        $hash = password_hash($haslo, PASSWORD_DEFAULT);
-        $hash_sql = mysqli_real_escape_string($polaczenie, $hash);
+    if (isset($_POST["login"])) $login = trim($_POST["login"]); 
+    if (isset($_POST["haslo"])) $haslo = trim($_POST["haslo"]);
 
-        $ok = mysqli_query($polaczenie,
-            "INSERT INTO uzytkownicy(login, haslo_hash) VALUES ('$login_sql', '$hash_sql')"
-        );
+    if ($login=="" || $haslo=="") //jezeli login lub haslo puste
+        {
+            $blad = "Uzupełnij login i hasło.";
+        }
+        else if (strpos($login, " ") !== false) //jak nie to sprawdzamy czy login nie zawiera spacji
+        {
+            $blad = "Login nie może zawierać spacji.";
+        }
+        else
+        {
+            $login_sql = mysqli_real_escape_string($polaczenie, $login); // zabezpieczenie przed popsuciem zapytania SQL
+            $hash = password_hash($haslo, PASSWORD_DEFAULT);
+            $hash_sql = mysqli_real_escape_string($polaczenie, $hash);
 
-        if ($ok) $komunikat = "Dodano pracownika (konto użytkownika).";
-        else $blad = "Nie udało się dodać (może login już istnieje).";
-    }
+            $ok = mysqli_query($polaczenie,
+                "INSERT INTO uzytkownicy(login, haslo_hash) VALUES ('$login_sql', '$hash_sql')" // dodajemy użytkownika do bazy
+            );
+
+            if ($ok)
+            {
+                $komunikat = "Dodano pracownika (konto użytkownika).";
+            }
+            else
+            {
+                $blad = "Nie udało się dodać (może login już istnieje).";
+            }
+        }
 }
 
-/* RESET HASŁA */
-if (isset($_POST["reset_hasla"])) {
+//reset hasla
+if (isset($_POST["reset_hasla"])) 
+{
     $id = (int)$_POST["id"];
     $nowe = isset($_POST["nowe_haslo"]) ? trim($_POST["nowe_haslo"]) : "";
 
-    if ($nowe=="") {
-        $blad = "Podaj nowe hasło.";
-    } else {
-        $hash = password_hash($nowe, PASSWORD_DEFAULT);
-        $hash_sql = mysqli_real_escape_string($polaczenie, $hash);
-        mysqli_query($polaczenie, "UPDATE uzytkownicy SET haslo_hash='$hash_sql' WHERE id_uzytkownika=$id");
-        $komunikat = "Zmieniono hasło.";
-    }
+    if ($nowe=="") //jezeli nowe haslo puste
+        {
+            $blad = "Podaj nowe hasło."; // ustaw blad
+        } else 
+        {
+            $hash = password_hash($nowe, PASSWORD_DEFAULT);//  generuj hash nowego hasla
+            $hash_sql = mysqli_real_escape_string($polaczenie, $hash); 
+            mysqli_query($polaczenie, "UPDATE uzytkownicy SET haslo_hash='$hash_sql' WHERE id_uzytkownika=$id");// aktualizuj haslo w bazie
+            $komunikat = "Zmieniono hasło.";
+        }
 }
 ?>
 
@@ -93,25 +130,31 @@ if ($blad!="") echo "<div class='err'><b>$blad</b></div>";
 
 <?php
 $wynik = mysqli_query($polaczenie, "SELECT id_uzytkownika, login FROM uzytkownicy ORDER BY id_uzytkownika DESC");
-while ($wynik && ($u = mysqli_fetch_row($wynik))) {
-    echo "<tr>";
-    echo "<td>".$u[0]."</td>";
-    echo "<td>".$u[1]."</td>";
-    echo "<td>";
 
-    echo "<form method='post' style='display:inline-block; margin-right:10px;'>
-            <input type='hidden' name='id' value='".$u[0]."'>
-            <button class='btn danger' type='submit' name='usun' value='1' onclick=\"return confirm('Usunąć?')\">Usuń</button>
-          </form>";
+while ($wynik && ($u = mysqli_fetch_row($wynik)))
+{
+    $id = $u[0];
+    $login = $u[1];
+?>
+<tr>
+  <td><?php echo $id; ?></td>
+  <td><?php echo $login; ?></td>
 
-    echo "<form method='post' style='display:inline-block;'>
-            <input type='hidden' name='id' value='".$u[0]."'>
-            <input type='password' name='nowe_haslo' placeholder='Nowe hasło' style='max-width:220px; display:inline-block;'>
-            <button class='btn' type='submit' name='reset_hasla' value='1'>Reset hasła</button>
-          </form>";
-
-    echo "</td>";
-    echo "</tr>";
+  <td>
+    <form method="post" style="display:inline-block; margin-right:10px;"> <!-- to jest formularz do usuwania użytkownika -->
+      <input type="hidden" name="id" value="<?php echo $id; ?>">
+      <button class="btn danger" type="submit" name="usun" value="1"
+        onclick="return confirm('Usunąć?')">Usuń</button>
+    </form>
+    <form method="post" style="display:inline-block;">  <!-- to jest formularz do resetowania hasła -->
+        <input type="hidden" name="id" value="<?php echo $id; ?>">
+        <input type="password" name="nowe_haslo" placeholder="Nowe hasło"
+            style="max-width:220px; display:inline-block;">
+        <button class="btn" type="submit" name="reset_hasla" value="1">Reset hasła</button>
+    </form>
+  </td>
+</tr>
+<?php
 }
 if ($wynik) mysqli_free_result($wynik);
 

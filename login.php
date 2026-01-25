@@ -36,7 +36,7 @@ if (isset($_POST["zaloguj"])) // sprawdzenie czy formularz został wysłany
 
                 if (password_verify($haslo, $numer_wiersza[0])) // weryfikacja hasła
                     {
-                        $_SESSION["login"] = $login; // ustawienie sesji dla zalogowanego użytkownika
+                        $_SESSION["login"] = $login; // ustawienie sesji dla zalogowanego uzytkownika
                         header("Location: index.php");
                         exit();
                     }
@@ -53,8 +53,8 @@ if (isset($_POST["zaloguj"])) // sprawdzenie czy formularz został wysłany
                     if ($wynik_zapytania)
                     {
                         mysqli_free_result($wynik_zapytania); // zwolnienie pamięci wyniku zapytania
-                        }
-        }
+                    }
+                }
 }
 
 mysqli_close($polaczenie); // zamknięcie połączenia z bazą danych
@@ -70,12 +70,12 @@ mysqli_close($polaczenie); // zamknięcie połączenia z bazą danych
   <div class="card login-card">
     <h2>Logowanie</h2>
 
-    <?php
-    if ($blad != "") 
+<?php
+    if ($blad != "") // jak jest blad to wyswietl
         {
-            echo "<div class='err'><b>$blad</b></div>";
+            echo "<div class='blad'><b>$blad</b></div>";
         }
-    ?>
+?>
 
     <form method="post" autocomplete="off">
       <div class="form-row">

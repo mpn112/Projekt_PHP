@@ -16,7 +16,7 @@ if (!isset($_SESSION["login"])) // sprawdzamy czy jestesmy zalogowani
 </head>
 <body>
 
-<div class="box">
+<div class="box"> 
   <div class="card menu-card">
 
     <div class="app-title">Serwis Samochodowy Olejnik S.A</div>
