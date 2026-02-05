@@ -44,17 +44,17 @@ if (isset($_POST["zaloguj"])) // sprawdzenie czy formularz został wysłany
                     {
                         $blad = "Błędne hasło.";
                     }
-                    }
-                    else
-                    {
-                        $blad = "Nie ma takiego użytkownika.";
-                    }
+            }
+            else
+            {
+                $blad = "Nie ma takiego użytkownika.";
+            }
 
-                    if ($wynik_zapytania)
-                    {
-                        mysqli_free_result($wynik_zapytania); // zwolnienie pamięci wyniku zapytania
-                    }
-                }
+            if ($wynik_zapytania)
+            {
+                mysqli_free_result($wynik_zapytania); // zwolnienie pamięci wyniku zapytania
+            }
+        }
 }
 
 mysqli_close($polaczenie); // zamknięcie połączenia z bazą danych

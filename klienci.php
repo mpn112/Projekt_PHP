@@ -129,8 +129,9 @@ if ($blad!="") echo "<p style='color:red;'><b>$blad</b></p>";
 
 <?php
 $wynik_zapytania = mysqli_query($polaczenie, "SELECT id_klienta, imie, nazwisko, telefon, email FROM klienci ORDER BY id_klienta DESC"); //pobranie listy klientow z bazy danych
-
-while ($wynik_zapytania && ($numer_wiersza = mysqli_fetch_row($wynik_zapytania))) // wyswietlenie kazdego klienta w formularzu do edycji
+if ($wynik_zapytania)
+{
+        while ($wynik_zapytania && ($numer_wiersza = mysqli_fetch_row($wynik_zapytania))) // wyswietlenie kazdego klienta w formularzu do edycji
     {
         echo "<tr>";
         echo "<form method='post'>";
@@ -145,6 +146,7 @@ while ($wynik_zapytania && ($numer_wiersza = mysqli_fetch_row($wynik_zapytania))
             </td>";
         echo "</form>";
         echo "</tr>";
+    }
     }
 
 if ($wynik_zapytania) mysqli_free_result($wynik_zapytania); // zwolnienie pamięci wyniku zapytania

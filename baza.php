@@ -2,28 +2,27 @@
 
 function wczytaj_konfiguracje() // z konfiguracja.txt pobieram dane
 {
-$konfiguracja = array(); // tworze pusta tablice asocjacyjna czyli klucz wartosc z wyklady 4-5
-$plik = fopen("konfiguracja.txt", "r");// otwieram plik do odczytu
+    $konfiguracja = array(); // tworze pusta tablice asocjacyjna czyli klucz wartosc z wyklady 4-5
+    $plik = fopen("konfiguracja.txt", "r");// otwieram plik do odczytu
     if ($plik == false) // jezeli nie ma pliku to zwracam pusta tablice
+    {
+        return $konfiguracja;// zwracam pusta tablice
+    }
+
+    while (!feof($plik))// dopoki nie koniec pliku 
+    {
+        $linijka = trim(fgets($plik));
+        if ($linijka == "") continue; // jezeli linijka jest pusta to pomijam
+
+        $segmenty = explode("=", $linijka);// w miejsce = wsadzamy bombe i rozbijamy na 2 czesci DO NAUKI
+
+        if (count($segmenty) == 2) 
         {
-            return $konfiguracja;// zwracam pusta tablice
+            $klucz = trim($segmenty[0]); // klucz to pierwsza czesc
+            $wartosc = trim($segmenty[1]); // wartosc to druga czesc
+            $konfiguracja[$klucz] = $wartosc; // przypisuje do tablicy asocjacyjnej
         }
-
-        while (!feof($plik))// dopoki nie koniec pliku 
-        {
-            $linijka = trim(fgets($plik));
-            if ($linijka == "") continue; // jezeli linijka jest pusta to pomijam
-
-            $segmenty = explode("=", $linijka);// w miejsce = wsadzamy bombe i rozbijamy na 2 czesci DO NAUKI
-
-            if (count($segmenty) == 2) 
-                {
-                    $klucz = trim($segmenty[0]); // klucz to pierwsza czesc
-                    $wartosc = trim($segmenty[1]); // wartosc to druga czesc
-                    $konfiguracja[$klucz] = $wartosc; // przypisuje do tablicy asocjacyjnej
-
-                }
-        }
+    }
 
     fclose($plik);// zamykam plik
     return $konfiguracja; // zwracam tablice asocjacyjna
@@ -85,19 +84,19 @@ function polacz_z_baza()
 }
 
 
-function pobierz_formularza($nazwa)
-{
-    if (isset($_POST[$nazwa])) return trim($_POST[$nazwa]);// jezeli istnieje to zwracam wartosc z formularza
+// function pobierz_formularza($nazwa)
+// {
+//     if (isset($_POST[$nazwa])) return trim($_POST[$nazwa]);// jezeli istnieje to zwracam wartosc z formularza
 
-    return "";
-}
+//     return "";
+// }
 
 
-function wez_z_zdresu($nazwa)
-{
-    if (isset($_GET[$nazwa])) return trim($_GET[$nazwa]);
-    return "";
-}
+// function wez_z_zdresu($nazwa)
+// {
+//     if (isset($_GET[$nazwa])) return trim($_GET[$nazwa]);
+//     return "";
+// }
 function zapisz_konfiguracje($konfiguracja)
 {
     // zapisujemy dokładnie te 4 klucze
@@ -107,16 +106,16 @@ function zapisz_konfiguracje($konfiguracja)
     for ($i = 0; $i < count($klucze); $i++)
     {
         $klucz = $klucze[$i];
-        $wartosc = isset($konfiguracja[$klucz]) ? trim($konfiguracja[$klucz]) : "";
-
-        // zabezpieczenie: żeby nie dało się wstrzyknąć nowych linii do pliku
-        $wartosc = str_replace(array("\r", "\n"), "", $wartosc);
-
-        $zawartosc_txt .= $klucz . "=" . $wartosc . "\n";
+        $wartosc = "";
+        if (isset($konfiguracja[$klucz]) )
+            {
+                $wartosc = trim($konfiguracja[$klucz]);
+            }
+       $zawartosc_txt = $zawartosc_txt . $klucz . "=" . $wartosc . "\n";
     }
-
+    // zapisuje do pliku txt i sprawdzam czy sie udalo
     $czy_zapisano = file_put_contents("konfiguracja.txt", $zawartosc_txt);
-    return ($czy_zapisano !== false);
+    return ($czy_zapisano !== false); // zwracam true jezeli sie udalo
 }
 
 
