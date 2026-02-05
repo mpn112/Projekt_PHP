@@ -15,7 +15,7 @@ $blad = "";//   komunikaty o bledach
 
 // usuwanie klienta z bazy danych, no i z wyswietlenia
 if (isset($_POST["usun"])) 
-{
+{   
     $id = (int)$_POST["id"];
 
     $wynik_zapytania = mysqli_query($polaczenie, 
@@ -131,7 +131,7 @@ if ($blad!="") echo "<p style='color:red;'><b>$blad</b></p>";
 $wynik_zapytania = mysqli_query($polaczenie, "SELECT id_klienta, imie, nazwisko, telefon, email FROM klienci ORDER BY id_klienta DESC"); //pobranie listy klientow z bazy danych
 if ($wynik_zapytania)
 {
-        while ($wynik_zapytania && ($numer_wiersza = mysqli_fetch_row($wynik_zapytania))) // wyswietlenie kazdego klienta w formularzu do edycji
+        while ($numer_wiersza = mysqli_fetch_row($wynik_zapytania)) // wyswietlenie kazdego klienta w formularzu do edycji
     {
         echo "<tr>";
         echo "<form method='post'>";
@@ -146,10 +146,9 @@ if ($wynik_zapytania)
             </td>";
         echo "</form>";
         echo "</tr>";
+        }
+    mysqli_free_result($wynik_zapytania); // zwolnienie pamięci wyniku zapytania
     }
-    }
-
-if ($wynik_zapytania) mysqli_free_result($wynik_zapytania); // zwolnienie pamięci wyniku zapytania
 
 mysqli_close($polaczenie); // zamknięcie połączenia z bazą
 ?>

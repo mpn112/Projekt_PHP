@@ -33,10 +33,10 @@ if (isset($_POST["zaloguj"])) // sprawdzenie czy formularz został wysłany
         if ($wynik_zapytania && mysqli_num_rows($wynik_zapytania) == 1) // sprawdzam czy jest dokładnie jeden wynik
             {
                 $numer_wiersza = mysqli_fetch_row($wynik_zapytania); // pobranie wiersza z wyniku zapytania
-
-                if (password_verify($haslo, $numer_wiersza[0])) // weryfikacja hasła
+                $hash_hasla = $numer_wiersza[0];
+                if (password_verify($haslo, $hash_hasla)) // weryfikacja hasła
                     {
-                        $_SESSION["login"] = $login; // ustawienie sesji dla zalogowanego uzytkownika
+                        $_SESSION["login"] = $login; // do zmiennej sesyjnej zapisujemy login zalogowanego użytkownika
                         header("Location: index.php");
                         exit();
                     }
@@ -45,10 +45,10 @@ if (isset($_POST["zaloguj"])) // sprawdzenie czy formularz został wysłany
                         $blad = "Błędne hasło.";
                     }
             }
-            else
-            {
-                $blad = "Nie ma takiego użytkownika.";
-            }
+                else
+                {
+                    $blad = "Nie ma takiego użytkownika.";
+                }
 
             if ($wynik_zapytania)
             {
