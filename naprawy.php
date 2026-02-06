@@ -1,21 +1,21 @@
 <?php
 session_start();
-if (!isset($_SESSION["login"])) // jeśli nie zalogowano
+if (!isset($_SESSION["login"])) 
     {
-        header("Location: login.php");// przekierowanie do strony logowania
+        header("Location: login.php");
         exit();
     }
 
 include "naglowek.html";
 include "baza.php";
-$polaczenie = polacz_z_baza(); // laczenie z baza
+$polaczenie = polacz_z_baza(); 
 
 $klient_komunikat = "";
 $blad = "";
 $statusy_naprawy = array("Przyjęte", "W trakcie", "Gotowe", "Wydane");// dostępne statusy napraw w tablicy
 
 // tu usuwanie naprawy
-if (isset($_POST["usun"])) // jeśli naciśnięto przycisk usuń
+if (isset($_POST["usun"])) 
     {
         $id = (int)$_POST["id"];
         mysqli_query($polaczenie, "DELETE FROM naprawy WHERE id_naprawy=$id"); // usunięcie naprawy z bazy
@@ -52,7 +52,7 @@ if (isset($_POST["dodaj"]))
         $status_sql = mysqli_real_escape_string($polaczenie, $status_naprawy);
         $data_p_sql = mysqli_real_escape_string($polaczenie, $data_przyjecia);
 
-        if ($data_zakonczenia == "") // jeśli data zakonczenia naprawy nie jest podana
+        if ($data_zakonczenia == "") 
         {
             $zapytanie_sql = "INSERT INTO naprawy(id_pojazdu, id_mechanika, opis_usterki, status, data_przyjecia, data_zakonczenia, koszt)
                               VALUES ($id_pojazdu, $id_mechanika, '$opis_sql', '$status_sql', '$data_p_sql', NULL, ".(float)$koszt_naprawy.")"; // wstawienie NULL do bazy
@@ -70,7 +70,7 @@ if (isset($_POST["dodaj"]))
 }
 
 // edycja naprawy
-if (isset($_POST["zapisz"])) // jeśli nacisnięto przycisk zapisz
+if (isset($_POST["zapisz"])) 
 {
     $id = (int)$_POST["id"];
 
@@ -123,7 +123,7 @@ if (isset($_POST["zapisz"])) // jeśli nacisnięto przycisk zapisz
 }
 
 // szukajka napraw
-$szukany_tekst = "";// domyslnie pusty tekst do wyszukania
+$szukany_tekst = "";
 if (isset($_GET["szukany_tekst"])) $szukany_tekst = trim($_GET["szukany_tekst"]); // pobranie tekstu do wyszukania
 ?>
 
@@ -131,11 +131,11 @@ if (isset($_GET["szukany_tekst"])) $szukany_tekst = trim($_GET["szukany_tekst"])
 
 <?php if ($klient_komunikat!="") 
     {
-        echo "<p><b>$klient_komunikat</b></p>"; // wyświetlenie komunikatu
+        echo "<p><b>$klient_komunikat</b></p>"; 
     }
       if ($blad!="") 
       {
-        echo "<p style='color:red;'><b>$blad</b></p>"; // wyświetlenie błędu
+        echo "<p style='color:red;'><b>$blad</b></p>"; 
     } 
 ?>
 <h3>Wyszukiwanie</h3>
@@ -254,11 +254,11 @@ Opis usterki:<br>
 $warunek_wyszukiwania = "";// domyślnie brak warunku wyszukiwania
 if ($szukany_tekst != "")
 {
-    $szukany_tekst_sql = mysqli_real_escape_string($polaczenie, $szukany_tekst); // zabezpieczamy tekst wpisany przez użytkownika przed SQL Injection
+    $szukany_tekst_sql = mysqli_real_escape_string($polaczenie, $szukany_tekst); 
     
-    $warunek_wyszukiwania = "WHERE (kli.nazwisko LIKE '%$szukany_tekst_sql%'
-                            OR poj.vin LIKE '%$szukany_tekst_sql%'
-                            OR poj.rejestracja LIKE '%$szukany_tekst_sql%')"; // tworzymy fragment zapytania SQL do wyszukiwania po nazwisku, VIN albo rejestracji
+    $warunek_wyszukiwania = "WHERE (klienci.nazwisko LIKE '%$szukany_tekst_sql%'
+                            OR pojazdy.vin LIKE '%$szukany_tekst_sql%'
+                            OR pojazdy.rejestracja LIKE '%$szukany_tekst_sql%')"; // tworzymy fragment zapytania SQL do wyszukiwania po nazwisku, VIN albo rejestracji
     }
 
 $zapytanie_sql = "SELECT naprawy.id_naprawy,

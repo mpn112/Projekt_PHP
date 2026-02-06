@@ -1,9 +1,9 @@
 <?php
-session_start();// start sesji
+session_start();
 
-if (!isset($_SESSION["login"])) // sprawdzamy czy jestesmy zalogowani
+if (!isset($_SESSION["login"])) 
 {
-    header("Location: login.php");// jeżeli nie to wracamy do login.php tam jest stronka logowania
+    header("Location: login.php");
     exit();
 }
 ?>

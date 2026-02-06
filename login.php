@@ -4,39 +4,39 @@ session_start();
 
 if (isset($_SESSION["login"])) 
     {
-        header("Location: index.php");//przekierowanie do strony głównej jeśli użytkownik jest już zalogowany
+        header("Location: index.php");
         exit();
     }
 
 include "baza.php";
-$polaczenie = polacz_z_baza();// tworzenie połaczenia z baza danych
+$polaczenie = polacz_z_baza();
 
 $blad = "";
 
-if (isset($_POST["zaloguj"])) // sprawdzenie czy formularz został wysłany
+if (isset($_POST["zaloguj"])) 
 {
     $login = "";
     $haslo = "";
 
-    if (isset($_POST["login"])) $login = trim($_POST["login"]); //  usuwanie białych znaków z początku i końca wyklad 3-4
+    if (isset($_POST["login"])) $login = trim($_POST["login"]); 
     if (isset($_POST["haslo"])) $haslo = trim($_POST["haslo"]);
 
-    if ($login == "" || $haslo == "") // sprawdzenie czy pola nie są puste
+    if ($login == "" || $haslo == "") 
         {
-            $blad = "Podaj login i hasło."; //jezeli puste, ustawienie komunikatu o błędzie
+            $blad = "Podaj login i hasło."; 
         } else 
         {
         $login_sql = mysqli_real_escape_string($polaczenie, $login);
-        $zapytanie_sql = "SELECT haslo_hash FROM uzytkownicy WHERE login='$login_sql'"; // zapytanie SQL do pobrania hasła z bazy danych dla podanego loginu
+        $zapytanie_sql = "SELECT haslo_hash FROM uzytkownicy WHERE login='$login_sql'"; 
         $wynik_zapytania = mysqli_query($polaczenie, $zapytanie_sql);
 
-        if ($wynik_zapytania && mysqli_num_rows($wynik_zapytania) == 1) // sprawdzam czy jest dokładnie jeden wynik
+        if ($wynik_zapytania && mysqli_num_rows($wynik_zapytania) == 1) 
             {
-                $numer_wiersza = mysqli_fetch_row($wynik_zapytania); // pobranie wiersza z wyniku zapytania
+                $numer_wiersza = mysqli_fetch_row($wynik_zapytania); 
                 $hash_hasla = $numer_wiersza[0];
-                if (password_verify($haslo, $hash_hasla)) // weryfikacja hasła
+                if (password_verify($haslo, $hash_hasla)) 
                     {
-                        $_SESSION["login"] = $login; // do zmiennej sesyjnej zapisujemy login zalogowanego użytkownika
+                        $_SESSION["login"] = $login; 
                         header("Location: index.php");
                         exit();
                     }
@@ -52,12 +52,12 @@ if (isset($_POST["zaloguj"])) // sprawdzenie czy formularz został wysłany
 
             if ($wynik_zapytania)
             {
-                mysqli_free_result($wynik_zapytania); // zwolnienie pamięci wyniku zapytania
+                mysqli_free_result($wynik_zapytania); 
             }
         }
 }
 
-mysqli_close($polaczenie); // zamknięcie połączenia z bazą danych
+mysqli_close($polaczenie); 
 ?>
 <!doctype html>
 <html lang="pl">
@@ -71,7 +71,7 @@ mysqli_close($polaczenie); // zamknięcie połączenia z bazą danych
     <h2>Logowanie</h2>
 
 <?php
-    if ($blad != "") // jak jest blad to wyswietl
+    if ($blad != "") 
         {
             echo "<div class='blad'><b>$blad</b></div>";
         }

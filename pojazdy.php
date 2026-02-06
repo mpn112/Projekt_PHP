@@ -1,14 +1,14 @@
 <?php
 session_start();
-if (!isset($_SESSION["login"])) // jeśli nie zalogowano
+if (!isset($_SESSION["login"])) 
     {
-        header("Location: login.php"); // przekieruj do strony logowania
+        header("Location: login.php");
         exit();
     }
 
 include "naglowek.html";
 include "baza.php";
-$polaczenie = polacz_z_baza(); // nawiązanie połączenia z bazą
+$polaczenie = polacz_z_baza(); 
 
 $klient_komunikat = "";
 $blad = "";

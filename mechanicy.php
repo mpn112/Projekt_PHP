@@ -14,7 +14,7 @@ $klient_komunikat = "";
 $blad = "";
 
 // tu usuwamy mechanikow
-if (isset($_POST["usun"])) // sprawdzenie czy formularz został wysłany
+if (isset($_POST["usun"])) 
 {
     $id = (int)$_POST["id"];
 
@@ -26,7 +26,7 @@ if (isset($_POST["usun"])) // sprawdzenie czy formularz został wysłany
             $ile = (int)$wiersz[0]; mysqli_free_result($wynik_zapytania);
         }
 
-    if ($ile > 0) // jeśli są powiązane naprawy, to nie usuwamy
+    if ($ile > 0) /
         {
             $blad = "Nie można usunąć mechanika: istnieją powiązane naprawy.";
         } else 
@@ -37,7 +37,7 @@ if (isset($_POST["usun"])) // sprawdzenie czy formularz został wysłany
 }
 
 // tu dodawanie machanika
-if (isset($_POST["dodaj"])) // sprawdzenie czy formularz został wysłany
+if (isset($_POST["dodaj"])) 
 {
     $imie = "";
     $nazwisko = "";
@@ -47,7 +47,7 @@ if (isset($_POST["dodaj"])) // sprawdzenie czy formularz został wysłany
     if (isset($_POST["nazwisko"])) $nazwisko = trim($_POST["nazwisko"]);
     if (isset($_POST["specjalizacja"])) $specjalizacja = trim($_POST["specjalizacja"]);
 
-    if ($imie=="" || $nazwisko=="" || $specjalizacja=="") // sprawdzamy czy pola nie są puste
+    if ($imie=="" || $nazwisko=="" || $specjalizacja=="") 
         {
             $blad = "Uzupełnij wszystkie pola.";
         } else 

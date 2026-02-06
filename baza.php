@@ -1,30 +1,30 @@
 <?php
 
-function wczytaj_konfiguracje() // z konfiguracja.txt pobieram dane
+function wczytaj_konfiguracje() 
 {
-    $konfiguracja = array(); // tworze pusta tablice asocjacyjna czyli klucz wartosc z wyklady 4-5
+    $konfiguracja = array(); 
     $plik = fopen("konfiguracja.txt", "r");// otwieram plik do odczytu
-    if ($plik == false) // jezeli nie ma pliku to zwracam pusta tablice
+    if ($plik == false) 
     {
         return $konfiguracja;// zwracam pusta tablice
     }
 
-    while (!feof($plik))// dopoki nie koniec pliku 
+    while (!feof($plik))
     {
         $linijka = trim(fgets($plik));
-        if ($linijka == "") continue; // jezeli linijka jest pusta to pomijam
+        if ($linijka == "") continue; 
 
-        $segmenty = explode("=", $linijka);// w miejsce = wsadzamy bombe i rozbijamy na 2 czesci DO NAUKI
+        $segmenty = explode("=", $linijka);
 
         if (count($segmenty) == 2) 
         {
-            $klucz = trim($segmenty[0]); // klucz to pierwsza czesc
-            $wartosc = trim($segmenty[1]); // wartosc to druga czesc
-            $konfiguracja[$klucz] = $wartosc; // przypisuje do tablicy asocjacyjnej
+            $klucz = trim($segmenty[0]); 
+            $wartosc = trim($segmenty[1]); 
+            $konfiguracja[$klucz] = $wartosc; 
         }
     }
 
-    fclose($plik);// zamykam plik
+    fclose($plik);
     return $konfiguracja; // zwracam tablice asocjacyjna
 }
 
@@ -32,10 +32,10 @@ function wczytaj_konfiguracje() // z konfiguracja.txt pobieram dane
 
 function polacz_z_baza()
 {
-    $konfiguracja = wczytaj_konfiguracje();// pobieram konfiguracje z pliku txt
+    $konfiguracja = wczytaj_konfiguracje();
 
-    // wartości domyślne, gdy nie ma wpisu w txt
-    if (isset($konfiguracja["serwer"])) // jezeli istnieje to przypisuje wartosc z pliku txt
+    
+    if (isset($konfiguracja["serwer"])) 
         {
             $adres_serwera = $konfiguracja["serwer"];
         } else 
@@ -43,7 +43,7 @@ function polacz_z_baza()
             $adres_serwera = "127.0.0.1";       
         }
 
-    if (isset($konfiguracja["uzytkownik"])) // to samo tylko dla uzytkownika
+    if (isset($konfiguracja["uzytkownik"])) 
         {
             $uzytkownik = $konfiguracja["uzytkownik"];
         } else 
@@ -51,7 +51,7 @@ function polacz_z_baza()
             $uzytkownik = "root";
         }
 
-    if (isset($konfiguracja["haslo"])) // to samo tylko dla hasla
+    if (isset($konfiguracja["haslo"])) 
         {
             $haslo = $konfiguracja["haslo"];
         } else 
@@ -59,7 +59,7 @@ function polacz_z_baza()
             $haslo = "";
         }
 
-    if (isset($konfiguracja["baza"])) //j.w.
+    if (isset($konfiguracja["baza"]))
         {
             $nazwa_bazy = $konfiguracja["baza"];
         } else 
@@ -68,39 +68,25 @@ function polacz_z_baza()
         }
 
  
-    $polaczenie = mysqli_connect($adres_serwera, $uzytkownik, $haslo, $nazwa_bazy);// probuje sie polaczyc z baza
+    $polaczenie = mysqli_connect($adres_serwera, $uzytkownik, $haslo, $nazwa_bazy);
 
 
     if ($polaczenie == false)
         {
 
-            echo "<b>Nie udało się połączyć z bazą.</b>";// jezeli nie udalo sie polaczyc to wyswietlam komunikat
+            echo "<b>Nie udało się połączyć z bazą.</b>";
             exit();
         }
 
     mysqli_set_charset($polaczenie, "utf8mb4");
 
-    return $polaczenie;// zwracam polaczenie z baza
+    return $polaczenie;
 }
 
 
-// function pobierz_formularza($nazwa)
-// {
-//     if (isset($_POST[$nazwa])) return trim($_POST[$nazwa]);// jezeli istnieje to zwracam wartosc z formularza
-
-//     return "";
-// }
-
-
-// function wez_z_zdresu($nazwa)
-// {
-//     if (isset($_GET[$nazwa])) return trim($_GET[$nazwa]);
-//     return "";
-// }
 function zapisz_konfiguracje($konfiguracja)
 {
-    // zapisujemy dokładnie te 4 klucze
-    $klucze = array("serwer", "uzytkownik", "haslo", "baza");
+    $klucze = array("serwer", "uzytkownik", "haslo", "baza");// zapisujemy dokładnie te 4 klucze
 
     $zawartosc_txt = "";
     for ($i = 0; $i < count($klucze); $i++)

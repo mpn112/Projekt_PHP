@@ -1,19 +1,19 @@
 <?php
 session_start();
-if (!isset($_SESSION["login"])) // standardowo czy zalogowany jak nie to przekieruj na login
+if (!isset($_SESSION["login"])) 
     {
-        header("Location: login.php");// przekierowanie do strony logowania
+        header("Location: login.php");
         exit();
     }
 
-include "naglowek.html"; // z wykladu 4-5 naglowek zeby nie powtarzac kodu w sumie ok
-include "baza.php"; // plik z funkcja polacz_z_baza()
+include "naglowek.html"; 
+include "baza.php"; 
 $polaczenie = polacz_z_baza();
 
-$klient_komunikat = "";// komunikaty do wyswietlenia
-$blad = "";//   komunikaty o bledach
+$klient_komunikat = "";
+$blad = "";
 
-// usuwanie klienta z bazy danych, no i z wyswietlenia
+// usuwanie klienta z bazy danych.
 if (isset($_POST["usun"])) 
 {   
     $id = (int)$_POST["id"];
@@ -23,27 +23,27 @@ if (isset($_POST["usun"]))
     FROM naprawy nap
     JOIN pojazdy poj ON nap.id_pojazdu = poj.id_pojazdu
     WHERE poj.id_klienta = $id");// zapytanie sprawdzajace czy klient ma pojazdy z naprawami
-    $ileNapraw = 0;  // zmienna do przechowywania liczby napraw
+    $ileNapraw = 0;  
     if ($wynik_zapytania) 
         {   $wiersz = mysqli_fetch_row($wynik_zapytania); 
             $ileNapraw = (int)$wiersz[0]; mysqli_free_result($wynik_zapytania); 
-        }// pobranie wyniku zapytania
+        }
 
     if ($ileNapraw > 0) 
         {
              $blad = "Nie można usunąć klienta: ma pojazd powiązany z naprawami.";
         } else 
-        {// jezeli nie ma powiazan czyli nie zakonczonych napraw to usun klienta
+        {
             mysqli_query($polaczenie, "DELETE FROM pojazdy WHERE id_klienta=$id");
             mysqli_query($polaczenie, "DELETE FROM klienci WHERE id_klienta=$id");
-            $klient_komunikat = "Usunięto klienta."; // komunikat o usunieciu klienta
+            $klient_komunikat = "Usunięto klienta."; 
         }
 }
 
 // dopisanie nowego klienta
-if (isset($_POST["dodaj"])) // jezeli kliknieto dodaj
+if (isset($_POST["dodaj"])) 
     {
-    $imie = ""; // zmienne do przechowywania danych klienta
+    $imie = ""; 
     $nazwisko = "";
     $telefon = "";
     $email = "";
@@ -53,7 +53,7 @@ if (isset($_POST["dodaj"])) // jezeli kliknieto dodaj
         if (isset($_POST["telefon"])) $telefon = trim($_POST["telefon"]);
         if (isset($_POST["email"])) $email = trim($_POST["email"]);
 
-        if ($imie=="" || $nazwisko=="" || $telefon=="" || $email=="") //tu sprawdzam czy wszystkie pola wpisane maja dane
+        if ($imie=="" || $nazwisko=="" || $telefon=="" || $email=="") 
             {
                 $blad = "Uzupełnij wszystkie pola klienta.";
             } else 
